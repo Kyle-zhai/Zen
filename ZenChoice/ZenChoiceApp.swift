@@ -1,17 +1,13 @@
-//
-//  ZenChoiceApp.swift
-//  ZenChoice
-//
-//  Created by Kyle on 3/12/26.
-//
-
 import SwiftUI
 
 @main
 struct ZenChoiceApp: App {
+    @State private var viewModel = ZenViewModel()
+
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environment(viewModel)
         }
     }
 }
