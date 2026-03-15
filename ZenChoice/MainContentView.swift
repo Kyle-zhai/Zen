@@ -11,7 +11,6 @@ struct MainContentView: View {
 
             VStack(spacing: 0) {
                 headerBar
-                modePicker
 
                 ScrollViewReader { proxy in
                     ScrollView(showsIndicators: false) {
@@ -52,12 +51,12 @@ struct MainContentView: View {
         .sheet(isPresented: $vm.showPaywall) {
             PaywallView().environment(viewModel)
         }
-        .sheet(isPresented: $vm.showHistory) {
-            HistorySheet().environment(viewModel)
+        .sheet(isPresented: $vm.showArchive) {
+            CourageArchiveView().environment(viewModel)
         }
         #if os(iOS)
         .sheet(isPresented: $vm.showShareSheet) {
-            if let img = vm.posterImage {
+            if let img = vm.shareCardImage {
                 ShareSheetView(image: img)
             }
         }
@@ -73,8 +72,8 @@ struct MainContentView: View {
 
     private var headerBar: some View {
         HStack {
-            Button { viewModel.showHistory = true } label: {
-                Image(systemName: "clock.arrow.circlepath")
+            Button { viewModel.showArchive = true } label: {
+                Image(systemName: "book.closed")
                     .font(.title3)
                     .foregroundStyle(ZenTheme.distantMountain.opacity(0.6))
             }
@@ -103,50 +102,6 @@ struct MainContentView: View {
         .padding(.top, 8)
     }
 
-    // MARK: - Mode Picker
-
-    private var modePicker: some View {
-        HStack(spacing: 4) {
-            ForEach(DivinationMode.allCases, id: \.self) { mode in
-                Button {
-                    guard viewModel.selectedMode != mode else { return }
-                    withAnimation(.easeInOut(duration: 0.3)) {
-                        viewModel.selectedMode = mode
-                    }
-                    if viewModel.showResult {
-                        withAnimation { viewModel.reset() }
-                    }
-                    HapticManager.selection()
-                } label: {
-                    Text(mode.rawValue)
-                        .font(ZenTheme.bodyFont(14))
-                        .foregroundStyle(
-                            viewModel.selectedMode == mode
-                                ? ZenTheme.inkBlack
-                                : ZenTheme.distantMountain.opacity(0.4)
-                        )
-                        .padding(.vertical, 8)
-                        .padding(.horizontal, 20)
-                        .background(
-                            Capsule()
-                                .fill(
-                                    viewModel.selectedMode == mode
-                                        ? ZenTheme.gooseYellow.opacity(0.3)
-                                        : .clear
-                                )
-                        )
-                }
-            }
-        }
-        .padding(.vertical, 10)
-        .background(
-            Capsule()
-                .fill(ZenTheme.inkBlack.opacity(0.04))
-        )
-        .padding(.horizontal, 40)
-        .padding(.top, 6)
-    }
-
     // MARK: - Input Area
 
     @ViewBuilder
@@ -154,21 +109,25 @@ struct MainContentView: View {
         VStack(spacing: 20) {
             HStack(spacing: 8) {
                 dot
-                Text(viewModel.selectedMode.subtitle)
+                Text("今日何所想")
                     .font(ZenTheme.caption(12))
                     .foregroundStyle(ZenTheme.distantMountain.opacity(0.4))
                     .tracking(6)
-                    .animation(.none, value: viewModel.selectedMode)
                 dot
             }
 
             VStack(spacing: 8) {
-                TextField(viewModel.selectedMode.placeholder, text: wish, axis: .vertical)
+                TextField("今天想做什么…", text: wish, axis: .vertical)
                     .font(ZenTheme.bodyFont(17))
                     .foregroundStyle(ZenTheme.distantMountain)
                     .multilineTextAlignment(.center)
                     .lineLimit(1...3)
                     .tint(ZenTheme.gooseYellow)
+                    .onChange(of: wish.wrappedValue) { _, newValue in
+                        if newValue.count > 50 {
+                            wish.wrappedValue = String(newValue.prefix(50))
+                        }
+                    }
 
                 DottedLine()
                     .stroke(style: StrokeStyle(lineWidth: 1, dash: [4, 4]))
@@ -177,22 +136,22 @@ struct MainContentView: View {
             }
             .padding(.horizontal, 20)
 
-            divinationButton
+            goButton
         }
     }
 
-    // MARK: - Divination Button
+    // MARK: - Go Button
 
-    private var divinationButton: some View {
+    private var goButton: some View {
         Button {
-            Task { await viewModel.divine() }
+            Task { await viewModel.generateEncouragement() }
         } label: {
             HStack(spacing: 8) {
                 if viewModel.isLoading {
                     ProgressView().tint(ZenTheme.gooseYellow)
                 } else {
                     Image(systemName: "sparkles")
-                    Text(viewModel.selectedMode.buttonTitle)
+                    Text("去吧")
                 }
             }
             .font(ZenTheme.calligraphy(18))
@@ -205,179 +164,74 @@ struct MainContentView: View {
                     .shadow(color: ZenTheme.inkBlack.opacity(0.3), radius: 12, y: 6)
             )
         }
-        .disabled(viewModel.isLoading)
+        .disabled(viewModel.isLoading || viewModel.wish.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
         .padding(.top, 8)
     }
 
-    // MARK: - Result Section (branches by mode)
+    // MARK: - Result Section
 
-    private func resultSection(_ result: DivinationResult) -> some View {
-        VStack(spacing: 24) {
-            switch result.mode {
-            case .todayAuspice:
-                todayResultHeader(result)
-            case .findBestDay:
-                bestDayResultHeader(result)
-            }
+    private func resultSection(_ result: EncouragementResult) -> some View {
+        VStack(spacing: 20) {
+            // Wish echo
+            Text("「\(result.wish)」")
+                .font(ZenTheme.bodyFont(15))
+                .foregroundStyle(ZenTheme.inkBlack)
+                .padding(.top, 8)
 
-            let keys = result.record.freeReasons.keys.sorted()
-            ForEach(keys, id: \.self) { key in
-                let idx = keys.firstIndex(of: key) ?? 0
+            dividerDecoration
+
+            // Dimension cards
+            ForEach(Array(result.dimensions.enumerated()), id: \.element.id) { index, dim in
                 ResultCardView(
-                    dimensionKey: key,
-                    reason: result.record.freeReasons[key] ?? "",
-                    delay: Double(idx) * 0.12
+                    dimensionResult: dim,
+                    delay: Double(index) * 0.12,
+                    onShare: { viewModel.generateShareCard(dimensionResult: dim) }
                 )
             }
 
-            premiumSection(result.record)
+            // Subscriber upsell (if free)
+            if !viewModel.isSubscribed {
+                subscriberUpsell
+            }
 
             actionButtons
         }
         .transition(.move(edge: .bottom).combined(with: .opacity))
     }
 
-    // MARK: - Mode 1 Result Header (Today's Auspice)
+    // MARK: - Subscriber Upsell
 
-    private func todayResultHeader(_ result: DivinationResult) -> some View {
-        VStack(spacing: 10) {
-            Text("天机已定")
-                .font(ZenTheme.caption(12))
-                .foregroundStyle(ZenTheme.distantMountain.opacity(0.4))
-                .tracking(8)
-
-            Text(result.verdict ?? "吉")
-                .font(ZenTheme.calligraphy(52))
-                .foregroundStyle(
-                    result.isAuspicious
-                        ? ZenTheme.gooseYellow
-                        : ZenTheme.distantMountain.opacity(0.5)
-                )
-                .shadow(
-                    color: result.isAuspicious
-                        ? ZenTheme.gooseYellow.opacity(0.3)
-                        : .clear,
-                    radius: 12
-                )
-
-            Text(result.verdictDescription)
-                .font(ZenTheme.bodyFont(14))
-                .foregroundStyle(ZenTheme.distantMountain.opacity(0.6))
-
-            dividerDecoration
-
-            Text(
-                result.isAuspicious
-                    ? "今天宜「\(result.record.wish)」"
-                    : "今天「\(result.record.wish)」需三思"
-            )
-            .font(ZenTheme.bodyFont(15))
-            .foregroundStyle(ZenTheme.inkBlack)
-
-            Text(result.record.formattedDate)
-                .font(ZenTheme.caption(12))
-                .foregroundStyle(ZenTheme.distantMountain.opacity(0.4))
-        }
-        .padding(.top, 8)
-    }
-
-    // MARK: - Mode 2 Result Header (Best Day + Time)
-
-    private func bestDayResultHeader(_ result: DivinationResult) -> some View {
-        VStack(spacing: 8) {
-            Text("天机已定")
-                .font(ZenTheme.caption(12))
-                .foregroundStyle(ZenTheme.distantMountain.opacity(0.4))
-                .tracking(8)
-
-            Text(result.record.formattedDate)
-                .font(ZenTheme.calligraphy(26))
-                .foregroundStyle(ZenTheme.inkBlack)
-
-            dividerDecoration
-
-            if let time = result.recommendedTime {
-                HStack(spacing: 6) {
-                    Image(systemName: "clock.fill")
-                        .font(.caption)
-                        .foregroundStyle(ZenTheme.gooseYellow)
-                    Text("最佳时辰")
-                        .font(ZenTheme.caption(12))
+    private var subscriberUpsell: some View {
+        Button {
+            viewModel.showPaywall = true
+            HapticManager.selection()
+        } label: {
+            HStack(spacing: 10) {
+                Image(systemName: "sparkle")
+                    .foregroundStyle(ZenTheme.gooseYellow)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("解锁更多视角")
+                        .font(ZenTheme.bodyFont(14))
+                        .foregroundStyle(ZenTheme.inkBlack)
+                    Text("自选维度 · 自选语气 · AI个性化生成")
+                        .font(ZenTheme.caption(11))
                         .foregroundStyle(ZenTheme.distantMountain.opacity(0.5))
                 }
-
-                Text(time)
-                    .font(ZenTheme.calligraphy(20))
-                    .foregroundStyle(ZenTheme.gooseYellow)
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 8)
-                    .background(
-                        RoundedRectangle(cornerRadius: 10)
-                            .fill(ZenTheme.inkBlack.opacity(0.06))
-                    )
-            }
-
-            Text("最适合「\(result.record.wish)」的日子")
-                .font(ZenTheme.bodyFont(14))
-                .foregroundStyle(ZenTheme.distantMountain.opacity(0.6))
-                .padding(.top, 4)
-        }
-        .padding(.top, 8)
-    }
-
-    // MARK: - Premium Section
-
-    private func premiumSection(_ record: DecisionRecord) -> some View {
-        VStack(spacing: 12) {
-            HStack {
-                Image(systemName: "lock.shield.fill")
-                    .foregroundStyle(ZenTheme.gooseYellow)
-                Text("玄学深度报告")
-                    .font(ZenTheme.calligraphy(16))
-                    .foregroundStyle(ZenTheme.inkBlack)
                 Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.caption)
+                    .foregroundStyle(ZenTheme.distantMountain.opacity(0.3))
             }
-
-            ZStack {
-                Text(record.premiumReport ?? "")
-                    .font(.system(size: 13, design: .monospaced))
-                    .foregroundStyle(ZenTheme.distantMountain)
-                    .padding()
-                    .blur(radius: viewModel.isPaid ? 0 : 8)
-
-                if !viewModel.isPaid {
-                    Button {
-                        viewModel.showPaywall = true
-                        HapticManager.selection()
-                    } label: {
-                        VStack(spacing: 8) {
-                            Image(systemName: "eye.slash.fill").font(.title2)
-                            Text("解锁深度报告").font(ZenTheme.bodyFont(14))
-                            Text("探索属于你的八字玄机")
-                                .font(ZenTheme.caption(11))
-                                .opacity(0.7)
-                        }
-                        .foregroundStyle(ZenTheme.inkBlack)
-                        .padding(.vertical, 20)
-                        .padding(.horizontal, 40)
-                        .background(
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(.ultraThinMaterial)
-                        )
-                    }
-                }
-            }
+            .padding(14)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(ZenTheme.gooseYellow.opacity(0.1))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(ZenTheme.gooseYellow.opacity(0.3), lineWidth: 1)
+                    )
+            )
         }
-        .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(ZenTheme.ivory)
-                .shadow(color: ZenTheme.inkBlack.opacity(0.06), radius: 10, y: 4)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(ZenTheme.gooseYellow.opacity(0.3), lineWidth: 1)
-        )
     }
 
     // MARK: - Action Buttons
@@ -385,21 +239,10 @@ struct MainContentView: View {
     private var actionButtons: some View {
         HStack(spacing: 16) {
             Button {
-                viewModel.generatePoster()
-            } label: {
-                Label("生成海报", systemImage: "square.and.arrow.up")
-                    .font(ZenTheme.bodyFont(14))
-                    .foregroundStyle(ZenTheme.ivory)
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 12)
-                    .background(Capsule().fill(ZenTheme.distantMountain))
-            }
-
-            Button {
                 withAnimation(.easeInOut(duration: 0.5)) { viewModel.reset() }
                 HapticManager.selection()
             } label: {
-                Label("再算一卦", systemImage: "arrow.counterclockwise")
+                Label("再来一次", systemImage: "arrow.counterclockwise")
                     .font(ZenTheme.bodyFont(14))
                     .foregroundStyle(ZenTheme.distantMountain)
                     .padding(.horizontal, 20)
@@ -467,7 +310,7 @@ private struct InkAnimationView: View {
             VStack(spacing: 6) {
                 ProgressView()
                     .tint(ZenTheme.distantMountain.opacity(0.5))
-                Text("卦象生成中…")
+                Text("正在召唤勇气…")
                     .font(ZenTheme.caption(13))
                     .foregroundStyle(ZenTheme.distantMountain.opacity(0.5))
             }
@@ -496,42 +339,6 @@ struct DottedLine: Shape {
         Path { p in
             p.move(to: CGPoint(x: 0, y: rect.midY))
             p.addLine(to: CGPoint(x: rect.width, y: rect.midY))
-        }
-    }
-}
-
-// MARK: - History Sheet
-
-struct HistorySheet: View {
-    @Environment(ZenViewModel.self) private var viewModel
-
-    var body: some View {
-        NavigationStack {
-            Group {
-                if viewModel.history.isEmpty {
-                    ContentUnavailableView(
-                        "尚无记录",
-                        systemImage: "tray",
-                        description: Text("你的择日历史将在此显示")
-                    )
-                } else {
-                    List(viewModel.history) { record in
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text(record.wish)
-                                .font(ZenTheme.bodyFont(15))
-                                .foregroundStyle(ZenTheme.inkBlack)
-                            Text(record.formattedDate)
-                                .font(ZenTheme.caption(12))
-                                .foregroundStyle(ZenTheme.distantMountain.opacity(0.6))
-                        }
-                        .padding(.vertical, 4)
-                    }
-                }
-            }
-            .navigationTitle("历史记录")
-            #if os(iOS)
-            .navigationBarTitleDisplayMode(.inline)
-            #endif
         }
     }
 }

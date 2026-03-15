@@ -3,6 +3,32 @@ import SwiftUI
 struct PaywallView: View {
     @Environment(ZenViewModel.self) private var viewModel
     @Environment(\.dismiss) private var dismiss
+    @State private var selectedPlan: Plan = .yearly
+
+    enum Plan: String, CaseIterable {
+        case monthly, yearly
+
+        var title: String {
+            switch self {
+            case .monthly: return "月度订阅"
+            case .yearly: return "年度订阅"
+            }
+        }
+
+        var price: String {
+            switch self {
+            case .monthly: return "¥18/月"
+            case .yearly: return "¥128/年"
+            }
+        }
+
+        var priceSubtitle: String? {
+            switch self {
+            case .monthly: return nil
+            case .yearly: return "约¥10.7/月，省41%"
+            }
+        }
+    }
 
     var body: some View {
         NavigationStack {
@@ -10,11 +36,11 @@ struct PaywallView: View {
                 ZenBackground()
 
                 ScrollView(showsIndicators: false) {
-                    VStack(spacing: 28) {
+                    VStack(spacing: 24) {
                         Spacer().frame(height: 20)
 
-                        Image(systemName: "sparkle")
-                            .font(.system(size: 54))
+                        Image(systemName: "sparkles")
+                            .font(.system(size: 48))
                             .foregroundStyle(ZenTheme.gooseYellow)
                             .shadow(
                                 color: ZenTheme.gooseYellow.opacity(0.4),
@@ -22,36 +48,42 @@ struct PaywallView: View {
                             )
 
                         VStack(spacing: 6) {
-                            Text("解锁禅择 · 深度")
-                                .font(ZenTheme.calligraphy(26))
+                            Text("解锁完整体验")
+                                .font(ZenTheme.calligraphy(24))
                                 .foregroundStyle(ZenTheme.inkBlack)
-                            Text("探索属于你的八字玄机")
+                            Text("让每次鼓励都独一无二")
                                 .font(ZenTheme.bodyFont(15))
                                 .foregroundStyle(
                                     ZenTheme.distantMountain.opacity(0.6)
                                 )
                         }
 
-                        VStack(alignment: .leading, spacing: 18) {
+                        // Feature comparison
+                        VStack(alignment: .leading, spacing: 16) {
                             featureRow(
-                                icon: "scroll.fill",
-                                title: "玄学深度报告",
-                                desc: "专业八字命理分析，解读天干地支奥秘"
+                                icon: "brain.head.profile",
+                                title: "AI个性化生成",
+                                desc: "每次生成独一无二的鼓励，永不重复"
                             )
                             featureRow(
-                                icon: "clock.badge.checkmark.fill",
-                                title: "精准吉时推荐",
-                                desc: "精确到时辰的最佳行动窗口"
+                                icon: "slider.horizontal.3",
+                                title: "自选维度与语气",
+                                desc: "选择你喜欢的视角和表达风格"
                             )
                             featureRow(
-                                icon: "paintpalette.fill",
-                                title: "五行调和指南",
-                                desc: "着装、方位、饮食一站式开运建议"
+                                icon: "plus.circle",
+                                title: "更多维度",
+                                desc: "每次获得5+个维度的鼓励（免费版3-4个）"
                             )
                             featureRow(
-                                icon: "infinity",
-                                title: "无限次择日",
-                                desc: "不限次数，随时随地求签问卦"
+                                icon: "book.closed",
+                                title: "勇气档案 + 年度报告",
+                                desc: "回顾你的每一次勇敢，生成年度勇气卡片"
+                            )
+                            featureRow(
+                                icon: "paintbrush",
+                                title: "自定义金句卡",
+                                desc: "个性化字体与背景样式"
                             )
                         }
                         .padding(20)
@@ -61,39 +93,47 @@ struct PaywallView: View {
                         )
                         .padding(.horizontal)
 
+                        // Plan picker
+                        VStack(spacing: 12) {
+                            ForEach(Plan.allCases, id: \.self) { plan in
+                                planButton(plan)
+                            }
+                        }
+                        .padding(.horizontal)
+
+                        // Subscribe button
                         Button {
-                            viewModel.isPaid = true
+                            // TODO: Integrate StoreKit 2 purchase
+                            viewModel.subscriptionStatus = selectedPlan == .monthly ? .monthly : .yearly
                             HapticManager.success()
                             dismiss()
                         } label: {
-                            VStack(spacing: 4) {
-                                Text("开启禅境")
-                                    .font(ZenTheme.calligraphy(18))
-                                Text("¥18.00 / 永久")
-                                    .font(ZenTheme.caption(12))
-                                    .opacity(0.7)
-                            }
-                            .foregroundStyle(ZenTheme.inkBlack)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 16)
-                            .background(
-                                RoundedRectangle(cornerRadius: 14)
-                                    .fill(ZenTheme.gooseYellow)
-                                    .shadow(
-                                        color: ZenTheme.gooseYellow.opacity(0.4),
-                                        radius: 12, y: 6
-                                    )
-                            )
+                            Text("订阅")
+                                .font(ZenTheme.calligraphy(18))
+                                .foregroundStyle(ZenTheme.inkBlack)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 16)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 14)
+                                        .fill(ZenTheme.gooseYellow)
+                                        .shadow(
+                                            color: ZenTheme.gooseYellow.opacity(0.4),
+                                            radius: 12, y: 6
+                                        )
+                                )
                         }
                         .padding(.horizontal, 30)
 
-                        Button("恢复购买") { HapticManager.selection() }
-                            .font(ZenTheme.caption(13))
-                            .foregroundStyle(
-                                ZenTheme.distantMountain.opacity(0.5)
-                            )
+                        Button("恢复购买") {
+                            // TODO: Restore StoreKit 2 purchases
+                            HapticManager.selection()
+                        }
+                        .font(ZenTheme.caption(13))
+                        .foregroundStyle(
+                            ZenTheme.distantMountain.opacity(0.5)
+                        )
 
-                        Text("本功能为娱乐性质，仅供参考\n购买前请确认了解产品内容")
+                        Text("本功能为娱乐性质，仅供参考\n订阅可随时在系统设置中取消")
                             .font(ZenTheme.caption(11))
                             .foregroundStyle(
                                 ZenTheme.distantMountain.opacity(0.3)
@@ -113,6 +153,42 @@ struct PaywallView: View {
                     }
                 }
             }
+        }
+    }
+
+    private func planButton(_ plan: Plan) -> some View {
+        Button {
+            withAnimation { selectedPlan = plan }
+            HapticManager.selection()
+        } label: {
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(plan.title)
+                        .font(ZenTheme.bodyFont(15))
+                        .foregroundStyle(ZenTheme.inkBlack)
+                    if let sub = plan.priceSubtitle {
+                        Text(sub)
+                            .font(ZenTheme.caption(11))
+                            .foregroundStyle(ZenTheme.gooseYellow)
+                    }
+                }
+                Spacer()
+                Text(plan.price)
+                    .font(ZenTheme.calligraphy(16))
+                    .foregroundStyle(ZenTheme.inkBlack)
+            }
+            .padding(16)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(selectedPlan == plan ? ZenTheme.gooseYellow.opacity(0.15) : .white.opacity(0.5))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(
+                                selectedPlan == plan ? ZenTheme.gooseYellow : ZenTheme.distantMountain.opacity(0.1),
+                                lineWidth: selectedPlan == plan ? 2 : 1
+                            )
+                    )
+            )
         }
     }
 

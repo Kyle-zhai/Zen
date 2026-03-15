@@ -84,30 +84,3 @@ struct ZenBackground: View {
         }
     }
 }
-
-// MARK: - Dimension Icon Mapping
-
-enum ReasonDimension: String, CaseIterable {
-    case cyber   = "赛博频率"
-    case social  = "群体心理"
-    case bio     = "生物节律"
-    case symbol  = "数字符号"
-
-    var icon: String {
-        switch self {
-        case .cyber:  return "wifi"
-        case .social: return "person.3.fill"
-        case .bio:    return "heart.circle.fill"
-        case .symbol: return "hexagon.fill"
-        }
-    }
-
-    var accent: Color {
-        switch self {
-        case .cyber:  return .cyan
-        case .social: return .orange
-        case .bio:    return .pink
-        case .symbol: return .purple
-        }
-    }
-}
