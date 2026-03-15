@@ -6,73 +6,75 @@ class ZenViewModel {
     // MARK: - User State
 
     var userName: String = ""
-    var birthDate: Date = Calendar.current.date(
-        byAdding: .year, value: -25, to: .now
-    ) ?? .now
-    var isPaid: Bool = false
+    var subscriptionStatus: SubscriptionStatus = .free
     var currentUserId: UUID?
 
-    // MARK: - Mode
+    var isSubscribed: Bool {
+        subscriptionStatus != .free
+    }
 
-    var selectedMode: DivinationMode = .todayAuspice
-
-    // MARK: - Divination State
+    // MARK: - Input
 
     var wish: String = ""
+
+    // MARK: - Encouragement State
+
     var isLoading: Bool = false
     var showInkAnimation: Bool = false
     var showResult: Bool = false
-    var currentResult: DivinationResult?
+    var currentResult: EncouragementResult?
 
-    var currentRecord: DecisionRecord? { currentResult?.record }
+    // MARK: - Subscriber Customization
 
-    // MARK: - History
+    var selectedDimensionIds: [String]? = nil
+    var selectedTone: String? = nil
 
-    var history: [DecisionRecord] = []
+    // MARK: - Archive
+
+    var archiveRecords: [CourageRecord] = []
 
     // MARK: - Sheets
 
     var showPaywall: Bool = false
     var showSettings: Bool = false
-    var showHistory: Bool = false
+    var showArchive: Bool = false
 
     // MARK: - Error
 
     var errorMessage: String?
     var showError: Bool = false
 
-    // MARK: - Poster
+    // MARK: - Share
 
     #if os(iOS)
-    var posterImage: UIImage?
+    var shareCardImage: UIImage?
     #endif
     var showShareSheet: Bool = false
 
     // MARK: - Private
 
     private let supabaseManager = SupabaseManager()
+    private let llmProvider: LLMProvider = PlaceholderLLMProvider()
 
     // MARK: - Lifecycle
 
     func initialize() async {
         do {
             currentUserId = try await supabaseManager.signInAnonymously()
-            await loadHistory()
+            await loadArchive()
         } catch {
-            errorMessage = "连接服务失败，请检查网络"
-            showError = true
-            HapticManager.error()
+            // App works offline for free tier (local templates)
+            print("[ZenChoice] Init failed, continuing offline: \(error)")
         }
     }
 
-    // MARK: - Core Divination (both modes)
+    // MARK: - Core: Generate Encouragement
 
-    func divine() async {
+    @MainActor
+    func generateEncouragement() async {
         let trimmed = wish.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else {
-            errorMessage = selectedMode == .todayAuspice
-                ? "请输入你想做的事"
-                : "请输入你想做的事"
+            errorMessage = "请输入你想做的事"
             showError = true
             HapticManager.error()
             return
@@ -88,14 +90,53 @@ class ZenViewModel {
 
         try? await Task.sleep(for: .seconds(2.2))
 
-        switch selectedMode {
-        case .todayAuspice:
-            await divineTodayAuspice(event: trimmed)
-        case .findBestDay:
-            await divineFindBestDay(event: trimmed)
+        let dimensionCount = isSubscribed ? 5 : Int.random(in: 3...4)
+
+        if isSubscribed, let tone = selectedTone {
+            // Subscriber: use LLM
+            do {
+                let dims = selectedDimensionIds ?? []
+                let results = try await llmProvider.generate(
+                    wish: trimmed,
+                    dimensions: dims,
+                    tone: tone
+                )
+                currentResult = EncouragementResult(
+                    wish: trimmed,
+                    dimensions: results,
+                    generatedAt: Date(),
+                    isLLMGenerated: true
+                )
+            } catch {
+                // Fallback to local on LLM failure
+                currentResult = EncouragementEngine.generate(
+                    wish: trimmed,
+                    dimensionCount: dimensionCount,
+                    specificDimensionIds: selectedDimensionIds
+                )
+            }
+        } else {
+            // Free tier: local templates
+            currentResult = EncouragementEngine.generate(
+                wish: trimmed,
+                dimensionCount: dimensionCount,
+                specificDimensionIds: isSubscribed ? selectedDimensionIds : nil
+            )
         }
 
-        Task { if let r = currentRecord { try? await supabaseManager.saveRecord(r) } }
+        // Save to archive
+        if let result = currentResult {
+            let record = CourageRecord(
+                id: UUID(),
+                userId: currentUserId ?? UUID(),
+                wish: trimmed,
+                dimensions: result.dimensions,
+                isShared: false,
+                isLLMGenerated: result.isLLMGenerated,
+                createdAt: .now
+            )
+            Task { try? await supabaseManager.saveRecord(record) }
+        }
 
         withAnimation(.easeInOut(duration: 0.8)) {
             showInkAnimation = false
@@ -106,74 +147,14 @@ class ZenViewModel {
         HapticManager.success()
     }
 
-    // MARK: - Mode 1: Today's Auspice
+    // MARK: - Archive
 
-    private func divineTodayAuspice(event: String) async {
-        let today = Date()
-        let (verdict, isAuspicious) = ZenDecisionEngine.evaluateToday(
-            event: event, userName: userName
-        )
-        let reasons = ZenDecisionEngine.generateReasons(for: today, userName: userName)
-        let report = ZenDecisionEngine.generatePremiumReport(
-            for: today, userName: userName, birthDate: birthDate
-        )
-
-        let record = DecisionRecord(
-            id: UUID(),
-            userId: currentUserId ?? UUID(),
-            wish: event,
-            recommendedDate: today,
-            freeReasons: reasons,
-            premiumReport: report,
-            createdAt: .now
-        )
-
-        currentResult = DivinationResult(
-            mode: .todayAuspice,
-            record: record,
-            verdict: verdict,
-            isAuspicious: isAuspicious,
-            recommendedTime: nil
-        )
-    }
-
-    // MARK: - Mode 2: Find Best Day
-
-    private func divineFindBestDay(event: String) async {
-        let bestDay = ZenDecisionEngine.findBestDay(userName: userName)
-        let bestTime = ZenDecisionEngine.recommendTime(for: bestDay, userName: userName)
-        let reasons = ZenDecisionEngine.generateReasons(for: bestDay, userName: userName)
-        let report = ZenDecisionEngine.generatePremiumReport(
-            for: bestDay, userName: userName, birthDate: birthDate
-        )
-
-        let record = DecisionRecord(
-            id: UUID(),
-            userId: currentUserId ?? UUID(),
-            wish: event,
-            recommendedDate: bestDay,
-            freeReasons: reasons,
-            premiumReport: report,
-            createdAt: .now
-        )
-
-        currentResult = DivinationResult(
-            mode: .findBestDay,
-            record: record,
-            verdict: nil,
-            isAuspicious: true,
-            recommendedTime: bestTime
-        )
-    }
-
-    // MARK: - History
-
-    func loadHistory() async {
+    func loadArchive() async {
         guard let uid = currentUserId else { return }
         do {
-            history = try await supabaseManager.fetchHistory(userId: uid)
+            archiveRecords = try await supabaseManager.fetchArchive(userId: uid)
         } catch {
-            print("[ZenChoice] Load history failed: \(error)")
+            print("[ZenChoice] Load archive failed: \(error)")
         }
     }
 
@@ -183,30 +164,35 @@ class ZenViewModel {
         guard let uid = currentUserId else { return }
         do {
             try await supabaseManager.syncProfile(
-                name: userName, birthDate: birthDate, userId: uid
+                name: userName, userId: uid
             )
         } catch {
             print("[ZenChoice] Sync profile failed: \(error)")
         }
     }
 
-    // MARK: - Poster
+    // MARK: - Share Card
 
-    func generatePoster() {
+    func generateShareCard(dimensionResult: DimensionResult) {
         #if os(iOS)
-        guard let record = currentRecord else { return }
-        posterImage = PosterService.render(record: record)
-        showShareSheet = posterImage != nil
-        if posterImage != nil { HapticManager.success() }
+        guard let result = currentResult else { return }
+        shareCardImage = PosterService.renderShareCard(
+            wish: result.wish,
+            dimensionResult: dimensionResult
+        )
+        showShareSheet = shareCardImage != nil
+        if shareCardImage != nil { HapticManager.success() }
         #endif
     }
+
+    // MARK: - Reset
 
     func reset() {
         wish = ""
         showResult = false
         currentResult = nil
         #if os(iOS)
-        posterImage = nil
+        shareCardImage = nil
         #endif
     }
 }

@@ -13,24 +13,23 @@ class SupabaseManager {
         }
     }
 
-    func syncProfile(name: String, birthDate: Date, userId: UUID) async throws {
+    func syncProfile(name: String, userId: UUID) async throws {
         let profile = UserProfile(
             id: userId,
             name: name,
-            birthDate: birthDate,
-            isPaid: false,
+            subscriptionStatus: .free,
             createdAt: nil
         )
         try await supabase.from("profiles").upsert(profile).execute()
     }
 
-    func saveRecord(_ record: DecisionRecord) async throws {
-        try await supabase.from("decision_records").insert(record).execute()
+    func saveRecord(_ record: CourageRecord) async throws {
+        try await supabase.from("courage_records").insert(record).execute()
     }
 
-    func fetchHistory(userId: UUID) async throws -> [DecisionRecord] {
-        let records: [DecisionRecord] = try await supabase
-            .from("decision_records")
+    func fetchArchive(userId: UUID) async throws -> [CourageRecord] {
+        let records: [CourageRecord] = try await supabase
+            .from("courage_records")
             .select()
             .eq("user_id", value: userId.uuidString)
             .order("created_at", ascending: false)
