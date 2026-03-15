@@ -10,6 +10,14 @@
 
 **Spec:** `docs/superpowers/specs/2026-03-15-zenchoice-pivot-design.md`
 
+**V1 Scope Notes — Intentionally Deferred Features:**
+- Annual courage report (spec Section 5) — deferred to V2
+- Custom share card styles/fonts/backgrounds (spec Section 6.2) — deferred to V2
+- `.xcstrings` String Catalog localization (spec Section 10) — deferred; V1 uses hardcoded Chinese UI strings with English dimension templates
+- Supabase migration SQL — handled separately in Supabase dashboard, not in app code
+- Wiring `SubscriptionManager` into `PaywallView` — Task 16 creates the StoreKit 2 manager but it is not wired into the UI until App Store Connect products are configured; `PaywallView` uses a mock toggle for development
+- Subscriber tone selector UI — the `selectedTone` property exists in ViewModel but no picker UI is built in V1; the LLM provider placeholder ignores tone anyway
+
 ---
 
 ## Chunk 1: Data Layer (Models + Engine + DimensionPool)
@@ -527,6 +535,7 @@ class ZenViewModel {
 
     // MARK: - Core: Generate Encouragement
 
+    @MainActor
     func generateEncouragement() async {
         let trimmed = wish.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else {
@@ -546,7 +555,7 @@ class ZenViewModel {
 
         try? await Task.sleep(for: .seconds(2.2))
 
-        let dimensionCount = isSubscribed ? 5 : 4
+        let dimensionCount = isSubscribed ? 5 : Int.random(in: 3...4)
 
         if isSubscribed, let tone = selectedTone {
             // Subscriber: use LLM
@@ -733,7 +742,7 @@ git commit -m "refactor: update SupabaseManager for courage_records and new User
 
 - [ ] **Step 1: Remove the ReasonDimension enum**
 
-Delete lines 89-113 (the entire `ReasonDimension` enum). Keep everything else unchanged (`ZenTheme`, `Color` hex init, `ZenBackground`).
+Delete lines 88-113 (the `// MARK: - Dimension Icon Mapping` comment and the entire `ReasonDimension` enum). Keep everything else unchanged (`ZenTheme`, `Color` hex init, `ZenBackground`).
 
 - [ ] **Step 2: Commit**
 
@@ -1226,6 +1235,8 @@ git commit -m "refactor: rewrite MainContentView for single-mode encouragement U
 ```
 
 ---
+
+**Note:** After Task 9, the build will fail because `CourageArchiveView` is referenced but not yet created. This is expected and resolved by Task 11. Tasks 10-13 can be implemented in any order; the build will succeed after all four are complete.
 
 ## Chunk 4: Share, Archive, Paywall, Settings
 
@@ -1873,7 +1884,7 @@ Add dimensions for these 20 additional perspectives, each with 3 CN + 3 EN templ
 - `reddit_top_post` Reddit热帖 — Reddit culture
 - `tiktok_creator` TikTok博主 — viral video energy
 
-Each dimension follows the same `Dimension` struct pattern established in Task 2.
+Each dimension follows the same `Dimension` struct pattern established in Task 2. Use the coding agent's LLM capabilities to draft templates in bulk, following the style guide from spec Section 3.2 (80-150 chars, absurd premise → twisted logic → "go do it").
 
 - [ ] **Step 2: Build to verify compilation**
 
