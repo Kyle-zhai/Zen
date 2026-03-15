@@ -118,13 +118,17 @@
 
 ## 5. 勇气档案
 
+替代现有 `MainContentView.swift` 中的 `HistorySheet`。复用同一个 Supabase `courage_records` 表（原 `decision_records` 表迁移重命名）。
+
 每次使用自动保存一条记录：
 - 日期
 - 用户输入的"想做什么"
-- 生成的鼓励内容（所有维度）
+- 生成的鼓励内容（所有维度，JSON存储）
 - 是否分享过
 
 档案页面是一个时间线列表，纯个人记录。不做打卡、不做提醒、不做社交压力。
+
+`CourageArchiveView.swift` 替代现有 `HistorySheet`，在 `MainContentView` 中以 sheet 方式呈现。
 
 **订阅版额外功能 — 年度勇气报告：**
 - 年底生成一份总结，如："你今年鼓起了47次勇气，最常想做的事是健身（12次），最大胆的想法是辞职"
@@ -179,9 +183,173 @@
 
 金句卡的内容本身就是广告——如果鼓励语足够有趣，用户会主动分享，每张卡片都是一次免费获客。
 
-## 8. 技术架构
+## 8. 数据模型
 
-### 8.1 保留的代码
+### 8.1 新 Swift 数据模型
+
+```swift
+// 维度定义
+struct Dimension: Identifiable, Codable {
+    let id: String              // e.g. "evolution", "aunt_wang"
+    let category: String        // e.g. "荒诞科学", "社会角色"
+    let emoji: String           // e.g. "🦕"
+    let title: String           // e.g. "进化论视角"
+    let titleEN: String         // e.g. "Evolution"
+    let templates: [String]     // 中文模板数组，含 {wish} 占位符
+    let templatesEN: [String]   // 英文模板数组，含 {wish} 占位符
+}
+
+// 单个维度的鼓励结果
+struct DimensionResult: Codable, Identifiable {
+    let id: UUID
+    let dimensionId: String
+    let dimensionTitle: String
+    let emoji: String
+    let content: String         // 最终生成的鼓励语（已替换占位符）
+}
+
+// 一次完整的鼓励结果
+struct EncouragementResult {
+    let wish: String
+    let dimensions: [DimensionResult]
+    let generatedAt: Date
+    let isLLMGenerated: Bool
+}
+
+// 用户档案（替代现有 UserProfile）
+struct UserProfile: Codable, Identifiable, Sendable {
+    let id: UUID
+    var name: String
+    var subscriptionStatus: SubscriptionStatus
+    var createdAt: Date?
+
+    enum CodingKeys: String, CodingKey {
+        case id, name
+        case subscriptionStatus = "subscription_status"
+        case createdAt = "created_at"
+    }
+}
+
+enum SubscriptionStatus: String, Codable, Sendable {
+    case free
+    case monthly
+    case yearly
+}
+
+// 勇气档案记录（替代现有 DecisionRecord）
+struct CourageRecord: Codable, Identifiable, Sendable {
+    let id: UUID
+    var userId: UUID
+    var wish: String
+    var dimensions: [DimensionResult]   // JSON 编码存储
+    var isShared: Bool
+    var isLLMGenerated: Bool
+    var createdAt: Date?
+
+    enum CodingKeys: String, CodingKey {
+        case id, wish, dimensions
+        case userId = "user_id"
+        case isShared = "is_shared"
+        case isLLMGenerated = "is_llm_generated"
+        case createdAt = "created_at"
+    }
+}
+```
+
+### 8.2 Supabase 数据库迁移
+
+**profiles 表（ALTER）：**
+- 删除列：`birth_date`、`is_paid`
+- 新增列：`subscription_status TEXT DEFAULT 'free'`
+
+**decision_records → courage_records（重命名 + 改结构）：**
+- 保留列：`id`、`user_id`、`wish`、`created_at`
+- 删除列：`recommended_date`、`free_reasons`、`premium_report`
+- 新增列：`dimensions JSONB`、`is_shared BOOLEAN DEFAULT false`、`is_llm_generated BOOLEAN DEFAULT false`
+
+**迁移策略：** v1 直接新建表 + 弃用旧表。当前用户量极小（开发阶段），无需数据迁移。如已上线则需要写 Supabase migration SQL 保留历史数据。
+
+### 8.3 ZenViewModel 改动明细
+
+**保留：**
+- `@Observable` class 声明和响应式架构
+- `userName` 属性
+- `isAnimating`、`showResult` 等 UI 状态
+- `wishText` 输入绑定
+- `initialize()` 方法骨架（改为新的初始化逻辑）
+- 历史记录获取逻辑（改为 `CourageRecord`）
+
+**删除：**
+- `selectedMode: DivinationMode`
+- `birthDate: Date`
+- `isPaid: Bool`（改为 `subscriptionStatus`）
+- `divine()`、`divineTodayAuspice()`、`divineFindBestDay()`
+- `currentResult: DivinationResult?`
+
+**新增：**
+- `subscriptionStatus: SubscriptionStatus`
+- `currentResult: EncouragementResult?`
+- `generateEncouragement()` — 调用 Engine 或 LLM
+- `selectedDimensions: [String]?` — 订阅版自选维度
+- `selectedTone: String?` — 订阅版自选语气
+- `archiveRecords: [CourageRecord]`
+
+## 9. SettingsView 改动
+
+**删除：**
+- 出生日期 DatePicker
+- "会员"区块（isPaid 解锁逻辑）
+- "引擎"标签（"禅择玄学引擎 v3.14"）
+
+**改为：**
+- 保留"你的名字"输入
+- 新增"订阅管理"区块（显示当前订阅状态、管理订阅按钮）
+- 免责声明重写：去掉"命理分析"、"玄学报告"等措辞，改为"本 App 所提供的鼓励内容为算法或AI生成，仅供娱乐参考"
+- "关于"区块更新版本号和引擎名称
+
+## 10. 本地化策略
+
+- V1 优先中文，英文作为次优先
+- 维度模板在 `DimensionPool.swift` 中同时定义中英文版本（`templates` / `templatesEN`）
+- UI 字符串使用 SwiftUI String Catalog（`.xcstrings`）做国际化
+- App 通过 `Locale.current` 检测语言，自动选择对应模板
+- LLM 订阅版：prompt 中指定语言，由模型自动生成对应语言内容
+- V1 最低要求：中文 30 维度完整模板，英文可先覆盖 15 个高质量维度
+
+## 11. 内容管理
+
+- 模板存储在 `DimensionPool.swift` 中，结构化为 `[Dimension]` 数组
+- V1 目标：30 个维度 x 10 条模板 = 300 条中文模板（最小可行内容量）
+- 模板可后续迁移到 JSON 资源文件以便热更新，但 V1 硬编码即可
+- 模板编写可借助 LLM 批量生成初稿，人工审核调整
+
+## 12. 边界情况处理
+
+- **输入过长**：限制输入框最大 50 字符
+- **输入为空**：按钮禁用，不可提交
+- **输入含特殊字符/纯 emoji**：正常处理，`{wish}` 原样替换
+- **模板语法不通顺**：部分模板使用"你想{wish}"而非直接替换，确保语法自然
+- **离线场景**：免费版完全离线可用（本地模板）；订阅版 LLM 不可用时 fallback 到本地模板并提示用户
+- **Supabase 不可达**：App 正常运行，勇气档案暂存本地，恢复后同步
+
+## 13. 分享技术实现
+
+- `PosterService.swift` 重构为金句卡渲染器，内部使用 `ShareCardView` 作为渲染模板
+- `ShareCardView.swift` 是一个 SwiftUI View，定义金句卡布局（用户问题 + 单维度鼓励 + 维度标签 + 日期 + 水印）
+- `PosterService` 将 `ShareCardView` 渲染为 `UIImage`，调用 `UIActivityViewController` / `ShareLink` 分享
+- 不再生成 9:16 大海报，改为紧凑卡片比例
+
+## 14. 购买模式迁移
+
+- 完全移除现有一次性买断逻辑（`isPaid: Bool`）
+- 新增 `SubscriptionManager.swift`，基于 StoreKit 2 实现
+- 产品 ID：`monthly_premium`、`yearly_premium`
+- `PaywallView.swift` 重写：展示订阅价格、免费 vs 订阅对比、订阅/恢复购买按钮
+- 无需处理老用户 grandfathering（产品尚未上线）
+
+## 15. 代码改动总览
+
+### 15.1 保留的代码
 
 | 文件 | 说明 |
 |------|------|
@@ -194,7 +362,7 @@
 | `ZenTheme.swift` | 保留禅意美学 |
 | `HapticManager.swift` | 保留 |
 
-### 8.2 大幅重写的代码
+### 15.2 大幅重写的代码
 
 | 文件 | 说明 |
 |------|------|
@@ -203,14 +371,14 @@
 | `ResultCardView.swift` | 重写为新的多维度鼓励展示 |
 | `PaywallView.swift` | 从"玄学深度报告"改为订阅制解锁 |
 
-### 8.3 删除的代码
+### 15.3 删除的代码
 
 - 所有八字/天干地支/五行/纳音相关内容
 - `bestDay` 择日模式
 - `DivinationMode` 双模式切换
 - premium 玄学报告生成逻辑
 
-### 8.4 新增的代码
+### 15.4 新增的代码
 
 | 文件 | 说明 |
 |------|------|
@@ -220,7 +388,7 @@
 | `CourageArchiveView.swift` | 勇气档案页面 |
 | `ShareCardView.swift` | 金句卡生成与分享 |
 
-### 8.5 LLM 接口层设计
+### 15.5 LLM 接口层设计
 
 ```swift
 protocol LLMProvider {
@@ -230,7 +398,7 @@ protocol LLMProvider {
 
 通用 protocol，开发者可后续实现任意模型的 provider（Claude、GPT、DeepSeek、通义千问等），插入即用。具体 LLM 对接暂不实现，预留接口。
 
-## 9. 品牌
+## 16. 品牌
 
 App 名称待定。候选方向：
 - 行动感：去做 / JustGo
@@ -241,7 +409,7 @@ App 名称待定。候选方向：
 
 最终名称在开发阶段确定。
 
-## 10. 竞品参考
+## 17. 竞品参考
 
 | 竞品 | 定位 | 月收入 | 参考点 |
 |------|------|--------|--------|
@@ -250,9 +418,11 @@ App 名称待定。候选方向：
 | 测测 App | 心理情感AI问答社区 | ~$100万 | 维度化内容、社区（后续版本参考） |
 | SocialAI | 定制AI粉丝回应 | 380万用户 | 情绪价值定位 |
 
-## 11. 关键指标
+## 18. 关键指标与埋点
 
 - **北极星指标**：金句卡分享率（分享次数 / 生成次数）
 - **留存指标**：7日留存率
 - **变现指标**：免费→订阅转化率（目标 3-5%）
 - **内容指标**：模板覆盖率（用户输入命中模板的比例）
+
+**埋点方案：** V1 使用 Supabase 自身记录（`courage_records` 表的 `is_shared` 字段可统计分享率，记录数可统计使用频次）。无需引入第三方 analytics SDK。后续如需更细粒度的漏斗分析，可接入 Mixpanel 或 PostHog。
