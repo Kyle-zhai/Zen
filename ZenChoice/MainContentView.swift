@@ -3,6 +3,8 @@ import SwiftUI
 struct MainContentView: View {
     @Environment(ZenViewModel.self) private var viewModel
 
+    private var cn: Bool { viewModel.L.isChinese }
+
     var body: some View {
         @Bindable var vm = viewModel
 
@@ -20,7 +22,7 @@ struct MainContentView: View {
                             inputArea(wish: $vm.wish)
 
                             if vm.showInkAnimation {
-                                InkAnimationView()
+                                InkAnimationView(isChinese: cn)
                             }
 
                             if vm.showResult, let result = vm.currentResult {
@@ -61,8 +63,8 @@ struct MainContentView: View {
             }
         }
         #endif
-        .alert("提示", isPresented: $vm.showError) {
-            Button("知道了") {}
+        .alert(cn ? "提示" : "Notice", isPresented: $vm.showError) {
+            Button(cn ? "知道了" : "OK") {}
         } message: {
             Text(vm.errorMessage ?? "")
         }
@@ -81,7 +83,7 @@ struct MainContentView: View {
             Spacer()
 
             VStack(spacing: 2) {
-                Text("禅择")
+                Text(cn ? "禅择" : "ZenChoice")
                     .font(ZenTheme.calligraphy(28))
                     .foregroundStyle(ZenTheme.inkBlack)
                 Text("ZENCHOICE")
@@ -109,15 +111,15 @@ struct MainContentView: View {
         VStack(spacing: 20) {
             HStack(spacing: 8) {
                 dot
-                Text("今日何所想")
+                Text(cn ? "今日何所想" : "What's on your mind")
                     .font(ZenTheme.caption(12))
                     .foregroundStyle(ZenTheme.distantMountain.opacity(0.4))
-                    .tracking(6)
+                    .tracking(cn ? 6 : 2)
                 dot
             }
 
             VStack(spacing: 8) {
-                TextField("今天想做什么…", text: wish, axis: .vertical)
+                TextField(cn ? "今天想做什么…" : "What do you want to do today…", text: wish, axis: .vertical)
                     .font(ZenTheme.bodyFont(17))
                     .foregroundStyle(ZenTheme.distantMountain)
                     .multilineTextAlignment(.center)
@@ -151,7 +153,7 @@ struct MainContentView: View {
                     ProgressView().tint(ZenTheme.gooseYellow)
                 } else {
                     Image(systemName: "sparkles")
-                    Text("去吧")
+                    Text(cn ? "去吧" : "Go")
                 }
             }
             .font(ZenTheme.calligraphy(18))
@@ -172,7 +174,6 @@ struct MainContentView: View {
 
     private func resultSection(_ result: EncouragementResult) -> some View {
         VStack(spacing: 20) {
-            // Wish echo
             Text("「\(result.wish)」")
                 .font(ZenTheme.bodyFont(15))
                 .foregroundStyle(ZenTheme.inkBlack)
@@ -180,7 +181,6 @@ struct MainContentView: View {
 
             dividerDecoration
 
-            // Dimension cards
             ForEach(Array(result.dimensions.enumerated()), id: \.element.id) { index, dim in
                 ResultCardView(
                     dimensionResult: dim,
@@ -189,7 +189,6 @@ struct MainContentView: View {
                 )
             }
 
-            // Subscriber upsell (if free)
             if !viewModel.isSubscribed {
                 subscriberUpsell
             }
@@ -210,10 +209,10 @@ struct MainContentView: View {
                 Image(systemName: "sparkle")
                     .foregroundStyle(ZenTheme.gooseYellow)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("解锁更多视角")
+                    Text(cn ? "解锁更多视角" : "Unlock more perspectives")
                         .font(ZenTheme.bodyFont(14))
                         .foregroundStyle(ZenTheme.inkBlack)
-                    Text("自选维度 · 自选语气 · AI个性化生成")
+                    Text(cn ? "自选维度 · 自选语气 · AI个性化生成" : "Custom dimensions · Custom tone · AI-powered")
                         .font(ZenTheme.caption(11))
                         .foregroundStyle(ZenTheme.distantMountain.opacity(0.5))
                 }
@@ -242,7 +241,7 @@ struct MainContentView: View {
                 withAnimation(.easeInOut(duration: 0.5)) { viewModel.reset() }
                 HapticManager.selection()
             } label: {
-                Label("再来一次", systemImage: "arrow.counterclockwise")
+                Label(cn ? "再来一次" : "Try again", systemImage: "arrow.counterclockwise")
                     .font(ZenTheme.bodyFont(14))
                     .foregroundStyle(ZenTheme.distantMountain)
                     .padding(.horizontal, 20)
@@ -274,6 +273,7 @@ struct MainContentView: View {
 // MARK: - Ink Animation
 
 private struct InkAnimationView: View {
+    let isChinese: Bool
     @State private var pulse = false
 
     var body: some View {
@@ -310,7 +310,7 @@ private struct InkAnimationView: View {
             VStack(spacing: 6) {
                 ProgressView()
                     .tint(ZenTheme.distantMountain.opacity(0.5))
-                Text("正在召唤勇气…")
+                Text(isChinese ? "正在召唤勇气…" : "Summoning courage…")
                     .font(ZenTheme.caption(13))
                     .foregroundStyle(ZenTheme.distantMountain.opacity(0.5))
             }

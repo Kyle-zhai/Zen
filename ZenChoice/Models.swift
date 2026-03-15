@@ -31,6 +31,22 @@ struct EncouragementResult: Sendable {
     let isLLMGenerated: Bool
 }
 
+// MARK: - App Language
+
+enum AppLanguage: String, CaseIterable, Codable {
+    case english = "en"
+    case chinese = "zh"
+
+    var displayName: String {
+        switch self {
+        case .english: return "English"
+        case .chinese: return "中文"
+        }
+    }
+
+    var isChinese: Bool { self == .chinese }
+}
+
 // MARK: - Subscription Status
 
 enum SubscriptionStatus: String, Codable, Sendable {

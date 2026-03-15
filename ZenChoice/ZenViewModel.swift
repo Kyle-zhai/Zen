@@ -3,6 +3,21 @@ import SwiftUI
 @Observable
 class ZenViewModel {
 
+    // MARK: - Language
+
+    var appLanguage: AppLanguage = {
+        if let raw = UserDefaults.standard.string(forKey: "appLanguage"),
+           let lang = AppLanguage(rawValue: raw) {
+            return lang
+        }
+        return .english
+    }() {
+        didSet { UserDefaults.standard.set(appLanguage.rawValue, forKey: "appLanguage") }
+    }
+
+    /// Shorthand used by all views to pick CN/EN strings.
+    var L: AppLanguage { appLanguage }
+
     // MARK: - User State
 
     var userName: String = ""
@@ -74,7 +89,7 @@ class ZenViewModel {
     func generateEncouragement() async {
         let trimmed = wish.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else {
-            errorMessage = "请输入你想做的事"
+            errorMessage = L.isChinese ? "请输入你想做的事" : "Please enter what you want to do"
             showError = true
             HapticManager.error()
             return
@@ -112,7 +127,8 @@ class ZenViewModel {
                 currentResult = EncouragementEngine.generate(
                     wish: trimmed,
                     dimensionCount: dimensionCount,
-                    specificDimensionIds: selectedDimensionIds
+                    specificDimensionIds: selectedDimensionIds,
+                    language: appLanguage
                 )
             }
         } else {
@@ -120,7 +136,8 @@ class ZenViewModel {
             currentResult = EncouragementEngine.generate(
                 wish: trimmed,
                 dimensionCount: dimensionCount,
-                specificDimensionIds: isSubscribed ? selectedDimensionIds : nil
+                specificDimensionIds: isSubscribed ? selectedDimensionIds : nil,
+                language: appLanguage
             )
         }
 

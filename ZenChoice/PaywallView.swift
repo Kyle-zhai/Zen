@@ -5,27 +5,29 @@ struct PaywallView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var selectedPlan: Plan = .yearly
 
+    private var cn: Bool { viewModel.L.isChinese }
+
     enum Plan: String, CaseIterable {
         case monthly, yearly
 
-        var title: String {
+        func title(_ cn: Bool) -> String {
             switch self {
-            case .monthly: return "月度订阅"
-            case .yearly: return "年度订阅"
+            case .monthly: return cn ? "月度订阅" : "Monthly"
+            case .yearly: return cn ? "年度订阅" : "Yearly"
             }
         }
 
-        var price: String {
+        func price(_ cn: Bool) -> String {
             switch self {
-            case .monthly: return "¥18/月"
-            case .yearly: return "¥128/年"
+            case .monthly: return cn ? "¥18/月" : "$3.99/mo"
+            case .yearly: return cn ? "¥128/年" : "$29.99/yr"
             }
         }
 
-        var priceSubtitle: String? {
+        func priceSubtitle(_ cn: Bool) -> String? {
             switch self {
             case .monthly: return nil
-            case .yearly: return "约¥10.7/月，省41%"
+            case .yearly: return cn ? "约¥10.7/月，省41%" : "~$2.50/mo, save 37%"
             }
         }
     }
@@ -48,10 +50,10 @@ struct PaywallView: View {
                             )
 
                         VStack(spacing: 6) {
-                            Text("解锁完整体验")
+                            Text(cn ? "解锁完整体验" : "Unlock Full Experience")
                                 .font(ZenTheme.calligraphy(24))
                                 .foregroundStyle(ZenTheme.inkBlack)
-                            Text("让每次鼓励都独一无二")
+                            Text(cn ? "让每次鼓励都独一无二" : "Make every encouragement unique")
                                 .font(ZenTheme.bodyFont(15))
                                 .foregroundStyle(
                                     ZenTheme.distantMountain.opacity(0.6)
@@ -62,28 +64,28 @@ struct PaywallView: View {
                         VStack(alignment: .leading, spacing: 16) {
                             featureRow(
                                 icon: "brain.head.profile",
-                                title: "AI个性化生成",
-                                desc: "每次生成独一无二的鼓励，永不重复"
+                                title: cn ? "AI个性化生成" : "AI Personalization",
+                                desc: cn ? "每次生成独一无二的鼓励，永不重复" : "Unique encouragement every time, never repeated"
                             )
                             featureRow(
                                 icon: "slider.horizontal.3",
-                                title: "自选维度与语气",
-                                desc: "选择你喜欢的视角和表达风格"
+                                title: cn ? "自选维度与语气" : "Custom Dimensions & Tone",
+                                desc: cn ? "选择你喜欢的视角和表达风格" : "Choose your favorite perspectives and styles"
                             )
                             featureRow(
                                 icon: "plus.circle",
-                                title: "更多维度",
-                                desc: "每次获得5+个维度的鼓励（免费版3-4个）"
+                                title: cn ? "更多维度" : "More Dimensions",
+                                desc: cn ? "每次获得5+个维度的鼓励（免费版3-4个）" : "5+ dimensions per session (free: 3-4)"
                             )
                             featureRow(
                                 icon: "book.closed",
-                                title: "勇气档案 + 年度报告",
-                                desc: "回顾你的每一次勇敢，生成年度勇气卡片"
+                                title: cn ? "勇气档案 + 年度报告" : "Courage Archive + Annual Report",
+                                desc: cn ? "回顾你的每一次勇敢，生成年度勇气卡片" : "Review every brave moment, annual courage card"
                             )
                             featureRow(
                                 icon: "paintbrush",
-                                title: "自定义金句卡",
-                                desc: "个性化字体与背景样式"
+                                title: cn ? "自定义金句卡" : "Custom Quote Cards",
+                                desc: cn ? "个性化字体与背景样式" : "Personalized fonts and background styles"
                             )
                         }
                         .padding(20)
@@ -108,7 +110,7 @@ struct PaywallView: View {
                             HapticManager.success()
                             dismiss()
                         } label: {
-                            Text("订阅")
+                            Text(cn ? "订阅" : "Subscribe")
                                 .font(ZenTheme.calligraphy(18))
                                 .foregroundStyle(ZenTheme.inkBlack)
                                 .frame(maxWidth: .infinity)
@@ -124,7 +126,7 @@ struct PaywallView: View {
                         }
                         .padding(.horizontal, 30)
 
-                        Button("恢复购买") {
+                        Button(cn ? "恢复购买" : "Restore Purchases") {
                             // TODO: Restore StoreKit 2 purchases
                             HapticManager.selection()
                         }
@@ -133,7 +135,7 @@ struct PaywallView: View {
                             ZenTheme.distantMountain.opacity(0.5)
                         )
 
-                        Text("本功能为娱乐性质，仅供参考\n订阅可随时在系统设置中取消")
+                        Text(cn ? "本功能为娱乐性质，仅供参考\n订阅可随时在系统设置中取消" : "For entertainment purposes only.\nCancel anytime in system settings.")
                             .font(ZenTheme.caption(11))
                             .foregroundStyle(
                                 ZenTheme.distantMountain.opacity(0.3)
@@ -163,17 +165,17 @@ struct PaywallView: View {
         } label: {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(plan.title)
+                    Text(plan.title(cn))
                         .font(ZenTheme.bodyFont(15))
                         .foregroundStyle(ZenTheme.inkBlack)
-                    if let sub = plan.priceSubtitle {
+                    if let sub = plan.priceSubtitle(cn) {
                         Text(sub)
                             .font(ZenTheme.caption(11))
                             .foregroundStyle(ZenTheme.gooseYellow)
                     }
                 }
                 Spacer()
-                Text(plan.price)
+                Text(plan.price(cn))
                     .font(ZenTheme.calligraphy(16))
                     .foregroundStyle(ZenTheme.inkBlack)
             }

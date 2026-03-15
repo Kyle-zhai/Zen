@@ -6,7 +6,8 @@ enum EncouragementEngine {
     static func generate(
         wish: String,
         dimensionCount: Int = 4,
-        specificDimensionIds: [String]? = nil
+        specificDimensionIds: [String]? = nil,
+        language: AppLanguage = .english
     ) -> EncouragementResult {
         let dimensions: [Dimension]
         if let ids = specificDimensionIds {
@@ -15,15 +16,15 @@ enum EncouragementEngine {
             dimensions = DimensionPool.randomSubset(count: dimensionCount)
         }
 
-        let isChineseLocale = Locale.current.language.languageCode?.identifier == "zh"
+        let useChinese = language.isChinese
         let results = dimensions.map { dim -> DimensionResult in
-            let pool = isChineseLocale ? dim.templates : dim.templatesEN
+            let pool = useChinese ? dim.templates : dim.templatesEN
             let template = pool.randomElement() ?? "{wish}"
             let content = template.replacingOccurrences(of: "{wish}", with: wish)
             return DimensionResult(
                 id: UUID(),
                 dimensionId: dim.id,
-                dimensionTitle: isChineseLocale ? dim.title : dim.titleEN,
+                dimensionTitle: useChinese ? dim.title : dim.titleEN,
                 emoji: dim.emoji,
                 content: content
             )

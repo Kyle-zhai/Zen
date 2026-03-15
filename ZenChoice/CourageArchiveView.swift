@@ -3,14 +3,16 @@ import SwiftUI
 struct CourageArchiveView: View {
     @Environment(ZenViewModel.self) private var viewModel
 
+    private var cn: Bool { viewModel.L.isChinese }
+
     var body: some View {
         NavigationStack {
             Group {
                 if viewModel.archiveRecords.isEmpty {
                     ContentUnavailableView(
-                        "尚无记录",
+                        cn ? "尚无记录" : "No Records",
                         systemImage: "book.closed",
-                        description: Text("你的勇气档案将在此显示")
+                        description: Text(cn ? "你的勇气档案将在此显示" : "Your courage archive will appear here")
                     )
                 } else {
                     List(viewModel.archiveRecords) { record in
@@ -36,7 +38,7 @@ struct CourageArchiveView: View {
                                 Spacer()
 
                                 if record.isShared {
-                                    Label("已分享", systemImage: "checkmark.circle.fill")
+                                    Label(cn ? "已分享" : "Shared", systemImage: "checkmark.circle.fill")
                                         .font(ZenTheme.caption(11))
                                         .foregroundStyle(.green.opacity(0.6))
                                 }
@@ -46,7 +48,7 @@ struct CourageArchiveView: View {
                     }
                 }
             }
-            .navigationTitle("勇气档案")
+            .navigationTitle(cn ? "勇气档案" : "Courage Archive")
             #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
             #endif
