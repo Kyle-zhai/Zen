@@ -50,7 +50,7 @@ struct QwenProvider: LLMProvider {
         request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = jsonData
-        request.timeoutInterval = 30
+        request.timeoutInterval = 15
 
         let (data, response): (Data, URLResponse)
         do {

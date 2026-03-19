@@ -6,6 +6,7 @@ struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.openURL) private var openURL
     @State private var localShowPaywall = false
+    @State private var showManageSubscriptions = false
 
     private var cn: Bool { viewModel.L.isChinese }
 
@@ -28,6 +29,16 @@ struct SettingsView: View {
                         Spacer()
                         Text(subscriptionLabel)
                             .foregroundStyle(viewModel.isSubscribed ? .green : .secondary)
+                    }
+
+                    HStack {
+                        Label(cn ? "每日次数" : "Daily Limit", systemImage: "flame")
+                        Spacer()
+                        Text(cn
+                             ? "\(viewModel.remainingUsage)/\(viewModel.dailyLimit) 次剩余"
+                             : "\(viewModel.remainingUsage)/\(viewModel.dailyLimit) remaining")
+                            .font(ZenTheme.caption(13))
+                            .foregroundStyle(.secondary)
                     }
 
                     if !viewModel.isSubscribed {
@@ -64,6 +75,16 @@ struct SettingsView: View {
                                 .foregroundStyle(.secondary)
                         }
                         .font(ZenTheme.caption(13))
+
+                        Text(cn ? "订阅将在到期前24小时自动续费" : "Subscription auto-renews 24 hours before expiry")
+                            .font(ZenTheme.caption(12))
+                            .foregroundStyle(.secondary)
+
+                        Button(role: .destructive) {
+                            showManageSubscriptions = true
+                        } label: {
+                            Label(cn ? "取消订阅" : "Cancel Subscription", systemImage: "xmark.circle")
+                        }
                     }
                 }
 
@@ -82,7 +103,7 @@ struct SettingsView: View {
                             .font(.headline)
 
                         Text(cn ? """
-                        「禅择 ZenChoice」是一款以娱乐为目的的趣味鼓励应用。\
+                        「禅意 ZenChoice」是一款以娱乐为目的的趣味鼓励应用。\
                         本 App 所提供的所有鼓励内容为算法或AI生成，\
                         仅供娱乐参考，不构成任何专业建议。
 
@@ -110,9 +131,7 @@ struct SettingsView: View {
                 if viewModel.isSubscribed {
                     Section(cn ? "订阅管理" : "Manage Subscription") {
                         Button(cn ? "管理 Apple 订阅" : "Manage Apple Subscription") {
-                            if let url = URL(string: "https://apps.apple.com/account/subscriptions") {
-                                openURL(url)
-                            }
+                            showManageSubscriptions = true
                         }
 
                         Button(cn ? "恢复购买" : "Restore Purchases") {
@@ -148,6 +167,9 @@ struct SettingsView: View {
             }) {
                 PaywallView().environment(viewModel)
             }
+            #if os(iOS)
+            .manageSubscriptionsSheet(isPresented: $showManageSubscriptions)
+            #endif
         }
     }
 

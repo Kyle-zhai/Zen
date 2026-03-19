@@ -41,6 +41,45 @@ class ZenViewModel {
         subscriptionStatus = subscriptionManager.currentStatus
     }
 
+    // MARK: - Daily Usage Limit
+
+    private static let usageCountKey = "dailyUsageCount"
+    private static let usageDateKey = "dailyUsageDate"
+
+    var dailyUsageCount: Int = 0
+
+    var dailyLimit: Int {
+        switch subscriptionStatus {
+        case .free: return 10
+        case .monthly: return 20
+        case .yearly: return 30
+        }
+    }
+
+    var remainingUsage: Int {
+        max(0, dailyLimit - dailyUsageCount)
+    }
+
+    private func loadDailyUsage() {
+        let today = Calendar.current.startOfDay(for: Date())
+        let savedDate = UserDefaults.standard.object(forKey: Self.usageDateKey) as? Date ?? .distantPast
+        if Calendar.current.isDate(today, inSameDayAs: savedDate) {
+            dailyUsageCount = UserDefaults.standard.integer(forKey: Self.usageCountKey)
+        } else {
+            // New day, reset
+            dailyUsageCount = 0
+            UserDefaults.standard.set(0, forKey: Self.usageCountKey)
+            UserDefaults.standard.set(today, forKey: Self.usageDateKey)
+        }
+    }
+
+    private func incrementDailyUsage() {
+        dailyUsageCount += 1
+        UserDefaults.standard.set(dailyUsageCount, forKey: Self.usageCountKey)
+        let today = Calendar.current.startOfDay(for: Date())
+        UserDefaults.standard.set(today, forKey: Self.usageDateKey)
+    }
+
     // MARK: - Input
 
     var wish: String = ""
@@ -120,6 +159,7 @@ class ZenViewModel {
 
     func initialize() async {
         loadLocalArchive()
+        loadDailyUsage()
         await subscriptionManager.loadProducts()
         await subscriptionManager.restorePurchases()
         syncSubscriptionStatus()
@@ -142,40 +182,47 @@ class ZenViewModel {
             return
         }
 
+        // Check daily usage limit
+        loadDailyUsage() // refresh in case day changed
+        guard remainingUsage > 0 else {
+            errorMessage = L.isChinese
+                ? "今日已经足够勇敢了，留给明天一点机会吧 😎"
+                : "You've been brave enough today — save some courage for tomorrow 😎"
+            showError = true
+            HapticManager.error()
+            return
+        }
+
         isLoading = true
         showResult = false
-
-        withAnimation(.easeOut(duration: 0.4)) {
-            showInkAnimation = true
-        }
+        showInkAnimation = true
         HapticManager.impact()
 
-        try? await Task.sleep(for: .seconds(2.2))
+        try? await Task.sleep(for: .seconds(1.8))
 
         let activePerspectives = customPerspectives.filter(\.isValid)
 
         if isSubscribed, !activePerspectives.isEmpty {
-            // Subscriber: LLM for each custom perspective (parallel) + 3 local templates = 6 total
-            var llmResults: [DimensionResult] = []
-
             let provider = llmProvider
-            await withTaskGroup(of: DimensionResult?.self) { group in
-                for p in activePerspectives {
-                    // Use name as perspective if description is empty
+            let indexedResults: [(Int, DimensionResult)] = await withTaskGroup(of: (Int, DimensionResult?).self) { group in
+                for (index, p) in activePerspectives.enumerated() {
                     let perspectiveText = p.description.isEmpty ? p.name : p.description
                     let prompt = buildLLMPrompt(wish: trimmed, perspective: perspectiveText, tone: p.tone)
                     let name = p.name
                     let emoji = p.emoji
                     group.addTask {
-                        try? await provider.generate(prompt: prompt, perspectiveName: name, emoji: emoji)
+                        let result = try? await provider.generate(prompt: prompt, perspectiveName: name, emoji: emoji)
+                        return (index, result)
                     }
                 }
-                for await result in group {
-                    if let r = result { llmResults.append(r) }
+                var collected: [(Int, DimensionResult)] = []
+                for await (index, result) in group {
+                    if let r = result { collected.append((index, r)) }
                 }
+                return collected
             }
+            let llmResults = indexedResults.sorted { $0.0 < $1.0 }.map(\.1)
 
-            // Notify if some AI perspectives failed
             let failedCount = activePerspectives.count - llmResults.count
             if failedCount > 0 {
                 errorMessage = L.isChinese
@@ -184,7 +231,6 @@ class ZenViewModel {
                 showError = true
             }
 
-            // 3 local template dimensions to fill remaining slots
             let localCount = max(1, 6 - llmResults.count)
             let localResult = EncouragementEngine.generate(
                 wish: trimmed,
@@ -192,7 +238,6 @@ class ZenViewModel {
                 language: appLanguage
             )
 
-            // LLM results first, then local templates
             let allDimensions = llmResults + localResult.dimensions
             currentResult = EncouragementResult(
                 wish: trimmed,
@@ -201,7 +246,6 @@ class ZenViewModel {
                 isLLMGenerated: !llmResults.isEmpty
             )
         } else {
-            // Free tier or no custom perspectives: local templates only
             let dimensionCount = isSubscribed ? 5 : Int.random(in: 3...4)
             currentResult = EncouragementEngine.generate(
                 wish: trimmed,
@@ -209,6 +253,9 @@ class ZenViewModel {
                 language: appLanguage
             )
         }
+
+        // Increment daily usage
+        incrementDailyUsage()
 
         // Save to local archive
         if let result = currentResult {
@@ -223,12 +270,10 @@ class ZenViewModel {
             appendToArchive(record)
         }
 
-        withAnimation(.easeInOut(duration: 0.8)) {
-            showInkAnimation = false
-            showResult = true
-        }
-
+        // Stop all loading states immediately, then show result
+        showInkAnimation = false
         isLoading = false
+        showResult = true
         HapticManager.success()
     }
 

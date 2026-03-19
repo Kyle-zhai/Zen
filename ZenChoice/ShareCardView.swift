@@ -86,7 +86,7 @@ struct ShareCardView: View {
                 // Bottom bar: branding + CTA
                 HStack(alignment: .center) {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(isChinese ? "禅择" : "ZenChoice")
+                        Text(isChinese ? "禅意" : "ZenChoice")
                             .font(.system(size: 11, weight: .bold, design: .rounded))
                             .foregroundStyle(ZenTheme.inkBlack.opacity(0.7))
                         Text(formattedDate)

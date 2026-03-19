@@ -85,7 +85,7 @@ struct MainContentView: View {
             Spacer()
 
             VStack(spacing: 2) {
-                Text(cn ? "禅择" : "ZenChoice")
+                Text(cn ? "禅意" : "ZenChoice")
                     .font(ZenTheme.calligraphy(28))
                     .foregroundStyle(ZenTheme.inkBlack)
                 Text(cn ? "勇敢去做想做的事" : "ZENCHOICE")
@@ -113,12 +113,15 @@ struct MainContentView: View {
         VStack(spacing: 20) {
             HStack(spacing: 8) {
                 dot
-                Text(cn ? "今日何所想" : "What's on your mind")
-                    .font(ZenTheme.caption(12))
+                Text(cn ? "想做却犹豫的事，交给我来选择" : "Tell me what you hesitate to do — I'll decide for you")
+                    .font(ZenTheme.caption(cn ? 12 : 10))
                     .foregroundStyle(ZenTheme.distantMountain.opacity(0.4))
-                    .tracking(cn ? 6 : 2)
+                    .tracking(cn ? 6 : 1)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
                 dot
             }
+            .padding(.bottom, 8)
 
             VStack(spacing: 8) {
                 TextField(cn ? "今天想做什么…" : "What do you want to do today…", text: wish, axis: .vertical)
@@ -141,6 +144,15 @@ struct MainContentView: View {
             .padding(.horizontal, 20)
 
             goButton
+
+            // Daily usage indicator
+            Text(cn
+                 ? "今日剩余 \(viewModel.remainingUsage)/\(viewModel.dailyLimit) 次"
+                 : "\(viewModel.remainingUsage)/\(viewModel.dailyLimit) uses left today")
+                .font(ZenTheme.caption(11))
+                .foregroundStyle(viewModel.remainingUsage > 0
+                                 ? ZenTheme.distantMountain.opacity(0.4)
+                                 : Color.red.opacity(0.6))
         }
     }
 
@@ -155,7 +167,7 @@ struct MainContentView: View {
                     ProgressView().tint(ZenTheme.gooseYellow)
                 } else {
                     Image(systemName: "sparkles")
-                    Text(cn ? "冲就完了" : "Send It")
+                    Text(cn ? "获知真相" : "Reveal the Truth")
                 }
             }
             .font(ZenTheme.calligraphy(18))
@@ -214,7 +226,7 @@ struct MainContentView: View {
                     Text(cn ? "解锁更多视角" : "Unlock more perspectives")
                         .font(ZenTheme.bodyFont(14))
                         .foregroundStyle(ZenTheme.inkBlack)
-                    Text(cn ? "自选维度 · 自选语气 · AI个性化生成" : "Custom dimensions · Custom tone · AI-powered")
+                    Text(cn ? "更多次数 · 自选维度 · AI个性化生成" : "More daily uses · Custom dimensions · AI-powered")
                         .font(ZenTheme.caption(11))
                         .foregroundStyle(ZenTheme.distantMountain.opacity(0.5))
                 }

@@ -36,6 +36,9 @@ struct PaywallView: View {
 
                         // Feature list
                         VStack(alignment: .leading, spacing: 16) {
+                            featureRow(icon: "flame",
+                                       title: cn ? "更多每日次数" : "More Daily Uses",
+                                       desc: cn ? "月度20次/天，年度30次/天（免费版10次/天）" : "Monthly: 20/day, Yearly: 30/day (free: 10/day)")
                             featureRow(icon: "brain.head.profile",
                                        title: cn ? "3个AI专属视角" : "3 Custom AI Perspectives",
                                        desc: cn ? "自定义视角+语气，AI为你量身生成鼓励" : "Custom perspectives + tone, AI generates unique encouragement")
@@ -229,13 +232,12 @@ struct PaywallView: View {
 
     private var savingsPercent: String {
         guard let yearly = manager.yearlyProduct, let monthly = manager.monthlyProduct else {
-            return cn ? "省32%" : "Save 32%"
+            return cn ? "省33%" : "Save 33%"
         }
-        let yearlyTotal = yearly.price
-        let monthlyTotal = monthly.price * 12
-        guard monthlyTotal > 0 else { return "" }
-        let saved = ((monthlyTotal - yearlyTotal) / monthlyTotal * 100) as NSDecimalNumber
-        let pct = saved.intValue
+        let yearlyDouble = NSDecimalNumber(decimal: yearly.price).doubleValue
+        let monthlyDouble = NSDecimalNumber(decimal: monthly.price).doubleValue * 12
+        guard monthlyDouble > 0 else { return "" }
+        let pct = Int(((monthlyDouble - yearlyDouble) / monthlyDouble) * 100)
         return cn ? "省\(pct)%" : "Save \(pct)%"
     }
 
