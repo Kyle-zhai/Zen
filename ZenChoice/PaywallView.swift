@@ -124,7 +124,16 @@ struct PaywallView: View {
                             .font(ZenTheme.caption(11))
                             .foregroundStyle(ZenTheme.distantMountain.opacity(0.3))
                             .multilineTextAlignment(.center)
-                            .padding(.bottom, 30)
+
+                        HStack(spacing: 16) {
+                            Link(cn ? "隐私政策" : "Privacy Policy",
+                                 destination: URL(string: "https://kyle-zhai.github.io/Zen/privacy.html")!)
+                            Text("·").foregroundStyle(ZenTheme.distantMountain.opacity(0.3))
+                            Link(cn ? "用户协议" : "Terms of Use",
+                                 destination: URL(string: "https://kyle-zhai.github.io/Zen/terms.html")!)
+                        }
+                        .font(ZenTheme.caption(11))
+                        .padding(.bottom, 30)
                     }
                 }
             }
@@ -208,28 +217,26 @@ struct PaywallView: View {
     }
 
     private func localizedPrice(for product: Product) -> String {
-        if cn {
-            // Show CNY reference price for Chinese users
-            let cny: Decimal = product.id == SubscriptionManager.yearlyProductId ? 98 : 12
-            return "¥\(cny)"
-        }
-        // Non-Chinese: use StoreKit's displayPrice (actual App Store currency)
-        return product.displayPrice
+        product.displayPrice
     }
 
     private func monthlyEquivalent(for product: Product) -> String {
-        if cn {
-            return "≈¥8.2/月"
-        }
         let monthly = product.price / 12
         let formatted = monthly.formatted(.currency(code: product.priceFormatStyle.currencyCode ?? "USD"))
-        return "≈\(formatted)/mo"
+        let suffix = cn ? "/月" : "/mo"
+        return "≈\(formatted)\(suffix)"
     }
 
     private var savingsPercent: String {
-        // ¥98/yr vs ¥12*12=¥144/yr → save 32%
-        // $39.99/yr vs $4.99*12=$59.88/yr → save 33%
-        cn ? "省32%" : "Save 33%"
+        guard let yearly = manager.yearlyProduct, let monthly = manager.monthlyProduct else {
+            return cn ? "省32%" : "Save 32%"
+        }
+        let yearlyTotal = yearly.price
+        let monthlyTotal = monthly.price * 12
+        guard monthlyTotal > 0 else { return "" }
+        let saved = ((monthlyTotal - yearlyTotal) / monthlyTotal * 100) as NSDecimalNumber
+        let pct = saved.intValue
+        return cn ? "省\(pct)%" : "Save \(pct)%"
     }
 
     // MARK: - Purchase

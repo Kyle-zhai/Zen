@@ -4,6 +4,7 @@ import StoreKit
 struct SettingsView: View {
     @Environment(ZenViewModel.self) private var viewModel
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.openURL) private var openURL
     @State private var localShowPaywall = false
 
     private var cn: Bool { viewModel.L.isChinese }
@@ -106,8 +107,31 @@ struct SettingsView: View {
                     .padding(.vertical, 4)
                 }
 
+                if viewModel.isSubscribed {
+                    Section(cn ? "订阅管理" : "Manage Subscription") {
+                        Button(cn ? "管理 Apple 订阅" : "Manage Apple Subscription") {
+                            if let url = URL(string: "https://apps.apple.com/account/subscriptions") {
+                                openURL(url)
+                            }
+                        }
+
+                        Button(cn ? "恢复购买" : "Restore Purchases") {
+                            Task {
+                                await viewModel.subscriptionManager.restorePurchases()
+                                viewModel.syncSubscriptionStatus()
+                            }
+                        }
+                    }
+                }
+
                 Section(cn ? "关于" : "About") {
-                    LabeledContent(cn ? "版本" : "Version", value: "2.0.0")
+                    LabeledContent(cn ? "版本" : "Version") {
+                        Text(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0")
+                    }
+                    Link(cn ? "隐私政策" : "Privacy Policy",
+                         destination: URL(string: "https://kyle-zhai.github.io/Zen/privacy.html")!)
+                    Link(cn ? "用户协议" : "Terms of Use",
+                         destination: URL(string: "https://kyle-zhai.github.io/Zen/terms.html")!)
                 }
             }
             .navigationTitle(cn ? "设置" : "Settings")

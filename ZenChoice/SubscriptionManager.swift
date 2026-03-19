@@ -34,7 +34,7 @@ class SubscriptionManager {
                 Self.yearlyProductId,
             ])
         } catch {
-            print("[ZenChoice] Failed to load products: \(error)")
+            // Product loading failed — user will see empty price list
         }
     }
 
@@ -59,28 +59,18 @@ class SubscriptionManager {
         var bestProductId: String?
         var bestExpiration: Date?
 
-        print("[ZenChoice] refreshStatus: products count = \(products.count)")
-
         // Method 1: Product.subscription.status (most reliable for upgrade detection)
         for product in products {
-            guard let subscription = product.subscription else {
-                print("[ZenChoice] product \(product.id) has no subscription info")
-                continue
-            }
+            guard let subscription = product.subscription else { continue }
             do {
                 let statuses = try await subscription.status
-                print("[ZenChoice] product \(product.id) has \(statuses.count) status entries")
                 for status in statuses {
-                    print("[ZenChoice]   state=\(status.state)")
                     guard case .verified(let renewalInfo) = status.renewalInfo,
                           case .verified(let transaction) = status.transaction else {
-                        print("[ZenChoice]   verification failed, skipping")
                         continue
                     }
 
                     let isActive = status.state == .subscribed || status.state == .inGracePeriod
-                    print("[ZenChoice]   productID=\(transaction.productID) isActive=\(isActive) exp=\(String(describing: transaction.expirationDate)) autoRenewProductId=\(renewalInfo.autoRenewPreference ?? "nil")")
-
                     guard isActive else { continue }
 
                     // Use autoRenewPreference — this is the KEY field that reflects upgrades.
@@ -100,16 +90,14 @@ class SubscriptionManager {
                     }
                 }
             } catch {
-                print("[ZenChoice] product \(product.id) status error: \(error)")
+                // Status check failed for this product, try next
             }
         }
 
         // Method 2: Fallback to currentEntitlements
         if bestProductId == nil {
-            print("[ZenChoice] Falling back to Transaction.currentEntitlements")
             for await result in Transaction.currentEntitlements {
                 if let transaction = try? checkVerified(result) {
-                    print("[ZenChoice]   entitlement: \(transaction.productID) revoked=\(transaction.revocationDate != nil) exp=\(String(describing: transaction.expirationDate))")
                     if transaction.revocationDate != nil { continue }
                     let pid = transaction.productID
                     let exp = transaction.expirationDate
@@ -125,12 +113,12 @@ class SubscriptionManager {
             }
         }
 
-        print("[ZenChoice] refreshStatus result: activeProductId=\(bestProductId ?? "nil") exp=\(String(describing: bestExpiration))")
         activeProductId = bestProductId
         expirationDate = bestExpiration
     }
 
     func restorePurchases() async {
+        try? await AppStore.sync()
         await refreshStatus()
     }
 

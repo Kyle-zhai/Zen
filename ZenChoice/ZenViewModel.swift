@@ -175,6 +175,15 @@ class ZenViewModel {
                 }
             }
 
+            // Notify if some AI perspectives failed
+            let failedCount = activePerspectives.count - llmResults.count
+            if failedCount > 0 {
+                errorMessage = L.isChinese
+                    ? "部分AI视角生成失败，已用模版补充"
+                    : "\(failedCount) AI perspective(s) unavailable, using templates instead"
+                showError = true
+            }
+
             // 3 local template dimensions to fill remaining slots
             let localCount = max(1, 6 - llmResults.count)
             let localResult = EncouragementEngine.generate(
