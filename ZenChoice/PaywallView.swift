@@ -1,36 +1,15 @@
 import SwiftUI
+import StoreKit
 
 struct PaywallView: View {
     @Environment(ZenViewModel.self) private var viewModel
     @Environment(\.dismiss) private var dismiss
-    @State private var selectedPlan: Plan = .yearly
+    @State private var selectedProductId: String = SubscriptionManager.yearlyProductId
+    @State private var isPurchasing = false
+    @State private var errorMessage: String?
 
     private var cn: Bool { viewModel.L.isChinese }
-
-    enum Plan: String, CaseIterable {
-        case monthly, yearly
-
-        func title(_ cn: Bool) -> String {
-            switch self {
-            case .monthly: return cn ? "月度订阅" : "Monthly"
-            case .yearly: return cn ? "年度订阅" : "Yearly"
-            }
-        }
-
-        func price(_ cn: Bool) -> String {
-            switch self {
-            case .monthly: return cn ? "¥18/月" : "$3.99/mo"
-            case .yearly: return cn ? "¥128/年" : "$29.99/yr"
-            }
-        }
-
-        func priceSubtitle(_ cn: Bool) -> String? {
-            switch self {
-            case .monthly: return nil
-            case .yearly: return cn ? "约¥10.7/月，省41%" : "~$2.50/mo, save 37%"
-            }
-        }
-    }
+    private var manager: SubscriptionManager { viewModel.subscriptionManager }
 
     var body: some View {
         NavigationStack {
@@ -44,10 +23,7 @@ struct PaywallView: View {
                         Image(systemName: "sparkles")
                             .font(.system(size: 48))
                             .foregroundStyle(ZenTheme.gooseYellow)
-                            .shadow(
-                                color: ZenTheme.gooseYellow.opacity(0.4),
-                                radius: 20
-                            )
+                            .shadow(color: ZenTheme.gooseYellow.opacity(0.4), radius: 20)
 
                         VStack(spacing: 6) {
                             Text(cn ? "解锁完整体验" : "Unlock Full Experience")
@@ -55,91 +31,98 @@ struct PaywallView: View {
                                 .foregroundStyle(ZenTheme.inkBlack)
                             Text(cn ? "让每次鼓励都独一无二" : "Make every encouragement unique")
                                 .font(ZenTheme.bodyFont(15))
-                                .foregroundStyle(
-                                    ZenTheme.distantMountain.opacity(0.6)
-                                )
+                                .foregroundStyle(ZenTheme.distantMountain.opacity(0.6))
                         }
 
-                        // Feature comparison
+                        // Feature list
                         VStack(alignment: .leading, spacing: 16) {
-                            featureRow(
-                                icon: "brain.head.profile",
-                                title: cn ? "AI个性化生成" : "AI Personalization",
-                                desc: cn ? "每次生成独一无二的鼓励，永不重复" : "Unique encouragement every time, never repeated"
-                            )
-                            featureRow(
-                                icon: "slider.horizontal.3",
-                                title: cn ? "自选维度与语气" : "Custom Dimensions & Tone",
-                                desc: cn ? "选择你喜欢的视角和表达风格" : "Choose your favorite perspectives and styles"
-                            )
-                            featureRow(
-                                icon: "plus.circle",
-                                title: cn ? "更多维度" : "More Dimensions",
-                                desc: cn ? "每次获得5+个维度的鼓励（免费版3-4个）" : "5+ dimensions per session (free: 3-4)"
-                            )
-                            featureRow(
-                                icon: "book.closed",
-                                title: cn ? "勇气档案 + 年度报告" : "Courage Archive + Annual Report",
-                                desc: cn ? "回顾你的每一次勇敢，生成年度勇气卡片" : "Review every brave moment, annual courage card"
-                            )
-                            featureRow(
-                                icon: "paintbrush",
-                                title: cn ? "自定义金句卡" : "Custom Quote Cards",
-                                desc: cn ? "个性化字体与背景样式" : "Personalized fonts and background styles"
-                            )
+                            featureRow(icon: "brain.head.profile",
+                                       title: cn ? "3个AI专属视角" : "3 Custom AI Perspectives",
+                                       desc: cn ? "自定义视角+语气，AI为你量身生成鼓励" : "Custom perspectives + tone, AI generates unique encouragement")
+                            featureRow(icon: "sparkles",
+                                       title: cn ? "每次6个维度" : "6 Dimensions Per Session",
+                                       desc: cn ? "3个AI视角 + 3个随机模版（免费版3-4个）" : "3 AI perspectives + 3 random templates (free: 3-4)")
+                            featureRow(icon: "book.closed",
+                                       title: cn ? "勇气档案" : "Courage Archive",
+                                       desc: cn ? "保存最近30条记录，回顾每次勇敢" : "Save last 30 records, revisit every brave moment")
+                            featureRow(icon: "square.and.arrow.up",
+                                       title: cn ? "精美分享卡" : "Beautiful Share Cards",
+                                       desc: cn ? "一键生成社交分享卡片" : "One-tap shareable quote cards")
                         }
                         .padding(20)
-                        .background(
-                            RoundedRectangle(cornerRadius: 16)
-                                .fill(.white.opacity(0.7))
-                        )
+                        .background(RoundedRectangle(cornerRadius: 16).fill(.white.opacity(0.7)))
                         .padding(.horizontal)
 
-                        // Plan picker
+                        // Plan picker — real StoreKit products
                         VStack(spacing: 12) {
-                            ForEach(Plan.allCases, id: \.self) { plan in
-                                planButton(plan)
+                            if manager.products.isEmpty {
+                                // Products still loading or unavailable
+                                ProgressView()
+                                    .padding()
+                                Text(cn ? "正在加载价格…" : "Loading prices…")
+                                    .font(ZenTheme.caption(13))
+                                    .foregroundStyle(.secondary)
+                            } else {
+                                // Show yearly first (default selected), then monthly
+                                ForEach(sortedProducts, id: \.id) { product in
+                                    productButton(product)
+                                }
                             }
                         }
                         .padding(.horizontal)
 
                         // Subscribe button
                         Button {
-                            // TODO: Integrate StoreKit 2 purchase
-                            viewModel.subscriptionStatus = selectedPlan == .monthly ? .monthly : .yearly
-                            HapticManager.success()
-                            dismiss()
+                            Task { await purchase() }
                         } label: {
-                            Text(cn ? "订阅" : "Subscribe")
-                                .font(ZenTheme.calligraphy(18))
-                                .foregroundStyle(ZenTheme.inkBlack)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 16)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 14)
-                                        .fill(ZenTheme.gooseYellow)
-                                        .shadow(
-                                            color: ZenTheme.gooseYellow.opacity(0.4),
-                                            radius: 12, y: 6
-                                        )
-                                )
+                            Group {
+                                if isPurchasing {
+                                    ProgressView()
+                                        .tint(ZenTheme.inkBlack)
+                                } else {
+                                    Text(cn ? "订阅" : "Subscribe")
+                                        .font(ZenTheme.calligraphy(18))
+                                        .foregroundStyle(ZenTheme.inkBlack)
+                                }
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 16)
+                            .background(
+                                RoundedRectangle(cornerRadius: 14)
+                                    .fill(ZenTheme.gooseYellow)
+                                    .shadow(color: ZenTheme.gooseYellow.opacity(0.4), radius: 12, y: 6)
+                            )
                         }
+                        .disabled(isPurchasing || manager.products.isEmpty)
                         .padding(.horizontal, 30)
 
+                        // Restore
                         Button(cn ? "恢复购买" : "Restore Purchases") {
-                            // TODO: Restore StoreKit 2 purchases
-                            HapticManager.selection()
+                            Task {
+                                await manager.restorePurchases()
+                                await MainActor.run { viewModel.syncSubscriptionStatus() }
+                                if viewModel.isSubscribed {
+                                    HapticManager.success()
+                                    dismiss()
+                                }
+                            }
                         }
                         .font(ZenTheme.caption(13))
-                        .foregroundStyle(
-                            ZenTheme.distantMountain.opacity(0.5)
-                        )
+                        .foregroundStyle(ZenTheme.distantMountain.opacity(0.5))
 
-                        Text(cn ? "本功能为娱乐性质，仅供参考\n订阅可随时在系统设置中取消" : "For entertainment purposes only.\nCancel anytime in system settings.")
+                        if let error = errorMessage {
+                            Text(error)
+                                .font(ZenTheme.caption(12))
+                                .foregroundStyle(.red.opacity(0.8))
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal)
+                        }
+
+                        Text(cn
+                             ? "订阅将通过 Apple ID 扣款，到期前24小时自动续费\n可随时在系统设置 > Apple ID > 订阅中取消"
+                             : "Payment charged to Apple ID. Auto-renews 24hrs before expiry.\nCancel anytime in Settings > Apple ID > Subscriptions.")
                             .font(ZenTheme.caption(11))
-                            .foregroundStyle(
-                                ZenTheme.distantMountain.opacity(0.3)
-                            )
+                            .foregroundStyle(ZenTheme.distantMountain.opacity(0.3))
                             .multilineTextAlignment(.center)
                             .padding(.bottom, 30)
                     }
@@ -149,54 +132,131 @@ struct PaywallView: View {
                 ToolbarItem(placement: .cancellationAction) {
                     Button { dismiss() } label: {
                         Image(systemName: "xmark.circle.fill")
-                            .foregroundStyle(
-                                ZenTheme.distantMountain.opacity(0.4)
-                            )
+                            .foregroundStyle(ZenTheme.distantMountain.opacity(0.4))
                     }
                 }
             }
         }
     }
 
-    private func planButton(_ plan: Plan) -> some View {
-        Button {
-            withAnimation { selectedPlan = plan }
+    // MARK: - Sorted products (yearly first)
+
+    private var sortedProducts: [Product] {
+        manager.products.sorted { a, _ in a.id == SubscriptionManager.yearlyProductId }
+    }
+
+    // MARK: - Product button
+
+    private func productButton(_ product: Product) -> some View {
+        let isSelected = selectedProductId == product.id
+        let isYearly = product.id == SubscriptionManager.yearlyProductId
+
+        return Button {
+            withAnimation { selectedProductId = product.id }
             HapticManager.selection()
         } label: {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(plan.title(cn))
-                        .font(ZenTheme.bodyFont(15))
-                        .foregroundStyle(ZenTheme.inkBlack)
-                    if let sub = plan.priceSubtitle(cn) {
-                        Text(sub)
+                    HStack(spacing: 6) {
+                        Text(isYearly ? (cn ? "年度订阅" : "Yearly") : (cn ? "月度订阅" : "Monthly"))
+                            .font(ZenTheme.bodyFont(15))
+                            .foregroundStyle(ZenTheme.inkBlack)
+
+                        if isYearly {
+                            Text(savingsPercent)
+                                .font(ZenTheme.caption(11))
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(Capsule().fill(ZenTheme.gooseYellow))
+                        }
+                    }
+
+                    if isYearly {
+                        Text(monthlyEquivalent(for: product))
                             .font(ZenTheme.caption(11))
                             .foregroundStyle(ZenTheme.gooseYellow)
                     }
                 }
+
                 Spacer()
-                Text(plan.price(cn))
+
+                Text(priceLabel(for: product, yearly: isYearly))
                     .font(ZenTheme.calligraphy(16))
                     .foregroundStyle(ZenTheme.inkBlack)
             }
             .padding(16)
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(selectedPlan == plan ? ZenTheme.gooseYellow.opacity(0.15) : .white.opacity(0.5))
+                    .fill(isSelected ? ZenTheme.gooseYellow.opacity(0.15) : .white.opacity(0.5))
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
-                            .stroke(
-                                selectedPlan == plan ? ZenTheme.gooseYellow : ZenTheme.distantMountain.opacity(0.1),
-                                lineWidth: selectedPlan == plan ? 2 : 1
-                            )
+                            .stroke(isSelected ? ZenTheme.gooseYellow : ZenTheme.distantMountain.opacity(0.1),
+                                    lineWidth: isSelected ? 2 : 1)
                     )
             )
         }
     }
 
-    private func featureRow(
-        icon: String, title: String, desc: String
-    ) -> some View {
+    // MARK: - Price formatting
+
+    /// Show price in CNY when Chinese, otherwise use StoreKit's displayPrice (real App Store currency).
+    private func priceLabel(for product: Product, yearly: Bool) -> String {
+        let price = localizedPrice(for: product)
+        let suffix = yearly ? (cn ? "/年" : "/yr") : (cn ? "/月" : "/mo")
+        return price + suffix
+    }
+
+    private func localizedPrice(for product: Product) -> String {
+        if cn {
+            // Show CNY reference price for Chinese users
+            let cny: Decimal = product.id == SubscriptionManager.yearlyProductId ? 98 : 12
+            return "¥\(cny)"
+        }
+        // Non-Chinese: use StoreKit's displayPrice (actual App Store currency)
+        return product.displayPrice
+    }
+
+    private func monthlyEquivalent(for product: Product) -> String {
+        if cn {
+            return "≈¥8.2/月"
+        }
+        let monthly = product.price / 12
+        let formatted = monthly.formatted(.currency(code: product.priceFormatStyle.currencyCode ?? "USD"))
+        return "≈\(formatted)/mo"
+    }
+
+    private var savingsPercent: String {
+        // ¥98/yr vs ¥12*12=¥144/yr → save 32%
+        // $39.99/yr vs $4.99*12=$59.88/yr → save 33%
+        cn ? "省32%" : "Save 33%"
+    }
+
+    // MARK: - Purchase
+
+    private func purchase() async {
+        guard let product = manager.products.first(where: { $0.id == selectedProductId }) else { return }
+        isPurchasing = true
+        errorMessage = nil
+
+        do {
+            let success = try await manager.purchase(product)
+            if success {
+                await MainActor.run { viewModel.syncSubscriptionStatus() }
+                HapticManager.success()
+                dismiss()
+            }
+        } catch {
+            errorMessage = cn ? "购买失败，请重试" : "Purchase failed, please try again"
+            HapticManager.error()
+        }
+
+        isPurchasing = false
+    }
+
+    // MARK: - Feature row
+
+    private func featureRow(icon: String, title: String, desc: String) -> some View {
         HStack(spacing: 14) {
             Image(systemName: icon)
                 .font(.title3)

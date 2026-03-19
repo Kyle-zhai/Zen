@@ -12,7 +12,7 @@ struct CourageArchiveView: View {
                     ContentUnavailableView(
                         cn ? "尚无记录" : "No Records",
                         systemImage: "book.closed",
-                        description: Text(cn ? "你的勇气档案将在此显示" : "Your courage archive will appear here")
+                        description: Text(cn ? "你的勇气档案将在此显示（最多保存30条）" : "Your courage archive will appear here (up to 30 entries)")
                     )
                 } else {
                     List(viewModel.archiveRecords) { record in
@@ -37,10 +37,10 @@ struct CourageArchiveView: View {
 
                                 Spacer()
 
-                                if record.isShared {
-                                    Label(cn ? "已分享" : "Shared", systemImage: "checkmark.circle.fill")
+                                if record.isLLMGenerated {
+                                    Label("AI", systemImage: "sparkles")
                                         .font(ZenTheme.caption(11))
-                                        .foregroundStyle(.green.opacity(0.6))
+                                        .foregroundStyle(ZenTheme.gooseYellow)
                                 }
                             }
                         }
@@ -52,8 +52,8 @@ struct CourageArchiveView: View {
             #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
             #endif
-            .task {
-                await viewModel.loadArchive()
+            .onAppear {
+                viewModel.loadLocalArchive()
             }
         }
     }

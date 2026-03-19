@@ -1,0 +1,154 @@
+{
+  "identifier" : "F3A1B2C3-D4E5-6789-ABCD-EF0123456789",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+
+  ],
+  "settings" : {
+    "_applicationInternalID" : "0",
+    "_developerTeamID" : "",
+    "_failTransactionsEnabled" : false,
+    "_lastVerificationError" : "",
+    "_locale" : "en_US",
+    "_storefront" : "USA",
+    "_storeKitErrors" : [
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Load Products"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Purchase"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Verification"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Store Sync"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Subscription Status"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Transaction"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Manage Subscriptions Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Refund Request Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Offer Code Redeem Sheet"
+      }
+    ]
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "group_premium",
+      "localizations" : [
+        {
+          "description" : "ZenChoice Premium subscription",
+          "displayName" : "Premium",
+          "locale" : "en_US"
+        },
+        {
+          "description" : "禅择高级订阅",
+          "displayName" : "高级版",
+          "locale" : "zh_CN"
+        }
+      ],
+      "name" : "Premium",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "4.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "monthly_premium_001",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Unlock AI perspectives, 6 dimensions, and more",
+              "displayName" : "Monthly Premium",
+              "locale" : "en_US"
+            },
+            {
+              "description" : "解锁AI专属视角、6个维度等完整功能",
+              "displayName" : "月度高级版",
+              "locale" : "zh_CN"
+            }
+          ],
+          "productID" : "monthly_premium",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Monthly Premium",
+          "subscriptionGroupID" : "group_premium",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "39.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "yearly_premium_001",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Save 33% with annual subscription",
+              "displayName" : "Yearly Premium",
+              "locale" : "en_US"
+            },
+            {
+              "description" : "年付更划算，省33%",
+              "displayName" : "年度高级版",
+              "locale" : "zh_CN"
+            }
+          ],
+          "productID" : "yearly_premium",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Yearly Premium",
+          "subscriptionGroupID" : "group_premium",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}

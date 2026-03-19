@@ -6,12 +6,14 @@ enum PosterService {
     @MainActor
     static func renderShareCard(
         wish: String,
-        dimensionResult: DimensionResult
+        dimensionResult: DimensionResult,
+        isChinese: Bool = true
     ) -> UIImage? {
         let view = ShareCardView(
             wish: wish,
             dimensionResult: dimensionResult,
-            date: Date()
+            date: Date(),
+            isChinese: isChinese
         )
         let renderer = ImageRenderer(content: view)
         renderer.scale = 3.0

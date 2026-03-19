@@ -50,7 +50,9 @@ struct MainContentView: View {
         .sheet(isPresented: $vm.showSettings) {
             SettingsView().environment(viewModel)
         }
-        .sheet(isPresented: $vm.showPaywall) {
+        .sheet(isPresented: $vm.showPaywall, onDismiss: {
+            viewModel.syncSubscriptionStatus()
+        }) {
             PaywallView().environment(viewModel)
         }
         .sheet(isPresented: $vm.showArchive) {
@@ -86,10 +88,10 @@ struct MainContentView: View {
                 Text(cn ? "禅择" : "ZenChoice")
                     .font(ZenTheme.calligraphy(28))
                     .foregroundStyle(ZenTheme.inkBlack)
-                Text("ZENCHOICE")
+                Text(cn ? "勇敢去做想做的事" : "ZENCHOICE")
                     .font(ZenTheme.caption(10))
                     .foregroundStyle(ZenTheme.distantMountain.opacity(0.5))
-                    .tracking(4)
+                    .tracking(cn ? 2 : 4)
             }
 
             Spacer()
@@ -153,7 +155,7 @@ struct MainContentView: View {
                     ProgressView().tint(ZenTheme.gooseYellow)
                 } else {
                     Image(systemName: "sparkles")
-                    Text(cn ? "去吧" : "Go")
+                    Text(cn ? "冲就完了" : "Send It")
                 }
             }
             .font(ZenTheme.calligraphy(18))

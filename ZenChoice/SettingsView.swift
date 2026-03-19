@@ -1,4 +1,5 @@
 import SwiftUI
+import StoreKit
 
 struct SettingsView: View {
     @Environment(ZenViewModel.self) private var viewModel
@@ -20,21 +21,6 @@ struct SettingsView: View {
                     }
                 }
 
-                Section(cn ? "个人信息" : "Profile") {
-                    TextField(cn ? "你的名字" : "Your name", text: $vm.userName)
-                }
-
-                Section {
-                    Button {
-                        Task {
-                            await viewModel.syncProfile()
-                            HapticManager.success()
-                        }
-                    } label: {
-                        Label(cn ? "同步资料到云端" : "Sync to cloud", systemImage: "icloud.and.arrow.up")
-                    }
-                }
-
                 Section(cn ? "订阅" : "Subscription") {
                     HStack {
                         Label(cn ? "订阅状态" : "Status", systemImage: "sparkle")
@@ -46,6 +32,45 @@ struct SettingsView: View {
                     if !viewModel.isSubscribed {
                         Button(cn ? "升级订阅" : "Upgrade") {
                             localShowPaywall = true
+                        }
+                    }
+
+                    // Monthly subscriber → upgrade to yearly
+                    if viewModel.subscriptionStatus == .monthly {
+                        Button {
+                            localShowPaywall = true
+                        } label: {
+                            HStack {
+                                Label(cn ? "升级到年度订阅" : "Upgrade to Yearly", systemImage: "arrow.up.circle")
+                                Spacer()
+                                if let yearly = viewModel.subscriptionManager.yearlyProduct {
+                                    Text("\(yearly.displayPrice)" + (cn ? "/年" : "/yr"))
+                                        .font(ZenTheme.caption(13))
+                                        .foregroundStyle(ZenTheme.gooseYellow)
+                                }
+                            }
+                        }
+                    }
+
+                    // Expiration date
+                    if viewModel.isSubscribed, let exp = viewModel.subscriptionManager.expirationDate {
+                        HStack {
+                            Text(cn ? "到期时间" : "Expires")
+                                .foregroundStyle(.secondary)
+                            Spacer()
+                            Text(exp, style: .date)
+                                .font(ZenTheme.caption(13))
+                                .foregroundStyle(.secondary)
+                        }
+                        .font(ZenTheme.caption(13))
+                    }
+                }
+
+                if viewModel.isSubscribed {
+                    Section(header: Text(cn ? "我的专属视角（最多3个）" : "My Custom Perspectives (up to 3)"),
+                            footer: Text(cn ? "填写名称即可启用，描述和语气可选。AI视角 + 随机模版视角，共显示6个" : "Fill in a name to enable. Description and tone are optional. AI + random template perspectives, 6 total")) {
+                        ForEach(0..<3, id: \.self) { index in
+                            perspectiveRow(index: index)
                         }
                     }
                 }
@@ -83,7 +108,6 @@ struct SettingsView: View {
 
                 Section(cn ? "关于" : "About") {
                     LabeledContent(cn ? "版本" : "Version", value: "2.0.0")
-                    LabeledContent(cn ? "开发者" : "Developer", value: "Kyle")
                 }
             }
             .navigationTitle(cn ? "设置" : "Settings")
@@ -95,10 +119,64 @@ struct SettingsView: View {
                     Button(cn ? "完成" : "Done") { dismiss() }
                 }
             }
-            .sheet(isPresented: $localShowPaywall) {
+            .sheet(isPresented: $localShowPaywall, onDismiss: {
+                viewModel.syncSubscriptionStatus()
+            }) {
                 PaywallView().environment(viewModel)
             }
         }
+    }
+
+    private let emojiOptions = ["✨", "🔥", "💎", "🌈", "⚡", "🎭", "👑", "🦄", "🌸", "🎯"]
+
+    @ViewBuilder
+    private func perspectiveRow(index: Int) -> some View {
+        @Bindable var vm = viewModel
+        let label = cn ? "视角 \(index + 1)" : "Perspective \(index + 1)"
+
+        VStack(alignment: .leading, spacing: 8) {
+            Text(label)
+                .font(ZenTheme.caption(12))
+                .foregroundStyle(.secondary)
+
+            HStack(spacing: 8) {
+                // Emoji picker
+                Menu {
+                    ForEach(emojiOptions, id: \.self) { e in
+                        Button(e) { vm.customPerspectives[index].emoji = e }
+                    }
+                } label: {
+                    Text(vm.customPerspectives[index].emoji)
+                        .font(.title2)
+                        .frame(width: 36, height: 36)
+                        .background(Color(.systemGray6))
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                }
+
+                VStack(spacing: 6) {
+                    TextField(
+                        cn ? "名称（如：我奶奶）" : "Name (e.g. My Grandma)",
+                        text: $vm.customPerspectives[index].name
+                    )
+                    .font(ZenTheme.bodyFont(15))
+
+                    TextField(
+                        cn ? "描述 - 选填（如：八十岁的慈祥奶奶）" : "Description - optional (e.g. a loving 80-year-old grandma)",
+                        text: $vm.customPerspectives[index].description
+                    )
+                    .font(ZenTheme.bodyFont(13))
+                    .foregroundStyle(.secondary)
+
+                    TextField(
+                        cn ? "语气 - 选填（如：毒舌、温柔、东北话…）" : "Tone - optional (e.g. sarcastic, gentle…)",
+                        text: $vm.customPerspectives[index].tone
+                    )
+                    .font(ZenTheme.bodyFont(13))
+                    .foregroundStyle(.secondary)
+                }
+            }
+        }
+        .padding(.vertical, 4)
     }
 
     private var subscriptionLabel: String {
