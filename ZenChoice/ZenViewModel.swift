@@ -161,7 +161,7 @@ class ZenViewModel {
         loadLocalArchive()
         loadDailyUsage()
         await subscriptionManager.loadProducts()
-        await subscriptionManager.restorePurchases()
+        await subscriptionManager.refreshStatus()
         syncSubscriptionStatus()
         Task {
             await subscriptionManager.listenForTransactions()
