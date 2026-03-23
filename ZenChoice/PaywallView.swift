@@ -38,13 +38,13 @@ struct PaywallView: View {
                         VStack(alignment: .leading, spacing: 16) {
                             featureRow(icon: "flame",
                                        title: cn ? "更多每日次数" : "More Daily Uses",
-                                       desc: cn ? "月度20次/天，年度30次/天（免费版10次/天）" : "Monthly: 20/day, Yearly: 30/day (free: 10/day)")
+                                       desc: cn ? "月度20次/天，年度30次/天（免费版15次/天）" : "Monthly: 20/day, Yearly: 30/day (free: 15/day)")
                             featureRow(icon: "brain.head.profile",
                                        title: cn ? "3个AI专属视角" : "3 Custom AI Perspectives",
                                        desc: cn ? "自定义视角+语气，AI为你量身生成鼓励" : "Custom perspectives + tone, AI generates unique encouragement")
                             featureRow(icon: "sparkles",
                                        title: cn ? "每次6个维度" : "6 Dimensions Per Session",
-                                       desc: cn ? "3个AI视角 + 3个随机模版（免费版3-4个）" : "3 AI perspectives + 3 random templates (free: 3-4)")
+                                       desc: cn ? "3个AI视角 + 3个随机模版（免费版4个）" : "3 AI perspectives + 3 random templates (free: 4)")
                             featureRow(icon: "book.closed",
                                        title: cn ? "勇气档案" : "Courage Archive",
                                        desc: cn ? "保存最近30条记录，回顾每次勇敢" : "Save last 30 records, revisit every brave moment")

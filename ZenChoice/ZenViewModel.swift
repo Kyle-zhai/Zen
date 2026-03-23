@@ -50,7 +50,7 @@ class ZenViewModel {
 
     var dailyLimit: Int {
         switch subscriptionStatus {
-        case .free: return 10
+        case .free: return 15
         case .monthly: return 20
         case .yearly: return 30
         }
@@ -246,7 +246,7 @@ class ZenViewModel {
                 isLLMGenerated: !llmResults.isEmpty
             )
         } else {
-            let dimensionCount = isSubscribed ? 5 : Int.random(in: 3...4)
+            let dimensionCount = isSubscribed ? 5 : 4
             currentResult = EncouragementEngine.generate(
                 wish: trimmed,
                 dimensionCount: dimensionCount,

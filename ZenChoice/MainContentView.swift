@@ -160,6 +160,9 @@ struct MainContentView: View {
 
     private var goButton: some View {
         Button {
+            #if os(iOS)
+            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+            #endif
             Task { await viewModel.generateEncouragement() }
         } label: {
             HStack(spacing: 8) {

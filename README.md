@@ -15,7 +15,7 @@ Each generation delivers 3–6 unique "dimensions" of encouragement: a philosoph
 - **AI-Powered Custom Perspectives** (Subscriber) — Define up to 3 custom perspectives with your own name, description, and tone. AI generates unique encouragement tailored to your style.
 - **Courage Archive** — Save and revisit your last 30 brave moments
 - **Share Cards** — One-tap generation of beautiful quote cards for social sharing
-- **Daily Usage Limits** — Free: 10/day, Monthly: 20/day, Yearly: 30/day
+- **Daily Usage Limits** — Free: 15/day, Monthly: 20/day, Yearly: 30/day
 - **Bilingual** — Full Chinese and English support, auto-detected from system language
 
 ## Tech Stack
@@ -64,8 +64,8 @@ ZenChoice/
 
 | Feature | Free | Monthly | Yearly |
 |---------|------|---------|--------|
-| Daily uses | 10 | 20 | 30 |
-| Dimensions per session | 3–4 | 6 | 6 |
+| Daily uses | 15 | 20 | 30 |
+| Dimensions per session | 4 | 6 | 6 |
 | Custom AI perspectives | — | 3 | 3 |
 | Courage archive | — | 30 records | 30 records |
 | Share cards | — | Yes | Yes |
