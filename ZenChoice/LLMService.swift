@@ -24,11 +24,8 @@ enum LLMError: Error, LocalizedError {
 
 /// Qwen (通义千问 DashScope) API provider — OpenAI-compatible.
 struct QwenProvider: LLMProvider {
-    private let apiKey: String = {
-        // Obfuscated key — not stored as a single plaintext literal
-        let parts = ["sk-", "6005ac1a", "eca5", "4083", "9a68", "9757e3ff5e25"]
-        return parts.joined()
-    }()
+    // Set your DashScope API key here (not committed to source control)
+    private let apiKey: String = ""
     private let model = "qwen-turbo"
     private let endpoint = URL(string: "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions")!
 
