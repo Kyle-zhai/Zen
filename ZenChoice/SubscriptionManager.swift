@@ -27,7 +27,14 @@ class SubscriptionManager {
         products.first { $0.id == Self.yearlyProductId }
     }
 
+    private var isLoadingProducts = false
+
     func loadProducts() async {
+        // Prevent concurrent loads
+        guard !isLoadingProducts else { return }
+        isLoadingProducts = true
+        defer { isLoadingProducts = false }
+
         do {
             products = try await Product.products(for: [
                 Self.monthlyProductId,
