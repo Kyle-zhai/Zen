@@ -157,6 +157,7 @@ class ZenViewModel {
 
     // MARK: - Lifecycle
 
+    @MainActor
     func initialize() async {
         loadLocalArchive()
         loadDailyUsage()
@@ -165,7 +166,6 @@ class ZenViewModel {
         syncSubscriptionStatus()
         Task {
             await subscriptionManager.listenForTransactions()
-            // Sync again after any transaction update
             await MainActor.run { syncSubscriptionStatus() }
         }
     }

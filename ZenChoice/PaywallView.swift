@@ -7,6 +7,8 @@ struct PaywallView: View {
     @State private var selectedProductId: String = SubscriptionManager.yearlyProductId
     @State private var isPurchasing = false
     @State private var errorMessage: String?
+    @State private var isLoadingProducts = false
+    @State private var hasAttemptedLoad = false
 
     private var cn: Bool { viewModel.L.isChinese }
     private var manager: SubscriptionManager { viewModel.subscriptionManager }
@@ -34,6 +36,28 @@ struct PaywallView: View {
                                 .foregroundStyle(ZenTheme.distantMountain.opacity(0.6))
                         }
 
+                        // Current subscription status
+                        if viewModel.isSubscribed {
+                            VStack(spacing: 6) {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "checkmark.seal.fill")
+                                        .foregroundStyle(.green)
+                                    Text(currentPlanLabel)
+                                        .font(ZenTheme.bodyFont(14))
+                                        .foregroundStyle(ZenTheme.inkBlack)
+                                }
+
+                                if let exp = manager.expirationDate {
+                                    Text(cn ? "到期时间：\(exp.formatted(date: .long, time: .omitted))" : "Expires: \(exp.formatted(date: .long, time: .omitted))")
+                                        .font(ZenTheme.caption(12))
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 10)
+                            .background(RoundedRectangle(cornerRadius: 12).fill(.green.opacity(0.08)))
+                        }
+
                         // Feature list
                         VStack(alignment: .leading, spacing: 16) {
                             featureRow(icon: "flame",
@@ -56,17 +80,31 @@ struct PaywallView: View {
                         .background(RoundedRectangle(cornerRadius: 16).fill(.white.opacity(0.7)))
                         .padding(.horizontal)
 
-                        // Plan picker — real StoreKit products
+                        // Plan picker
                         VStack(spacing: 12) {
-                            if manager.products.isEmpty {
-                                // Products still loading or unavailable
+                            if isLoadingProducts {
                                 ProgressView()
                                     .padding()
                                 Text(cn ? "正在加载价格…" : "Loading prices…")
                                     .font(ZenTheme.caption(13))
                                     .foregroundStyle(.secondary)
+                            } else if manager.products.isEmpty {
+                                VStack(spacing: 12) {
+                                    Image(systemName: "wifi.exclamationmark")
+                                        .font(.title2)
+                                        .foregroundStyle(.secondary)
+                                    Text(cn ? "无法加载订阅产品，请检查网络后重试" : "Unable to load products. Please check your connection and try again.")
+                                        .font(ZenTheme.bodyFont(14))
+                                        .foregroundStyle(.secondary)
+                                        .multilineTextAlignment(.center)
+                                    Button(cn ? "重试" : "Retry") {
+                                        Task { await loadProducts() }
+                                    }
+                                    .font(ZenTheme.bodyFont(14))
+                                    .foregroundStyle(ZenTheme.gooseYellow)
+                                }
+                                .padding()
                             } else {
-                                // Show yearly first (default selected), then monthly
                                 ForEach(sortedProducts, id: \.id) { product in
                                     productButton(product)
                                 }
@@ -83,7 +121,7 @@ struct PaywallView: View {
                                     ProgressView()
                                         .tint(ZenTheme.inkBlack)
                                 } else {
-                                    Text(cn ? "订阅" : "Subscribe")
+                                    Text(subscribeButtonLabel)
                                         .font(ZenTheme.calligraphy(18))
                                         .foregroundStyle(ZenTheme.inkBlack)
                                 }
@@ -96,7 +134,8 @@ struct PaywallView: View {
                                     .shadow(color: ZenTheme.gooseYellow.opacity(0.4), radius: 12, y: 6)
                             )
                         }
-                        .disabled(isPurchasing || manager.products.isEmpty)
+                        .disabled(isPurchasing || manager.products.isEmpty || isLoadingProducts)
+                        .opacity(manager.products.isEmpty || isLoadingProducts ? 0.5 : 1)
                         .padding(.horizontal, 30)
 
                         // Restore
@@ -104,10 +143,6 @@ struct PaywallView: View {
                             Task {
                                 await manager.restorePurchases()
                                 await MainActor.run { viewModel.syncSubscriptionStatus() }
-                                if viewModel.isSubscribed {
-                                    HapticManager.success()
-                                    dismiss()
-                                }
                             }
                         }
                         .font(ZenTheme.caption(13))
@@ -148,7 +183,54 @@ struct PaywallView: View {
                     }
                 }
             }
+            .task {
+                guard !hasAttemptedLoad else { return }
+                hasAttemptedLoad = true
+                if manager.products.isEmpty {
+                    await loadProducts()
+                }
+            }
         }
+    }
+
+    // MARK: - Load products (with 10s UI timeout)
+
+    private func loadProducts() async {
+        isLoadingProducts = true
+
+        // Separate timeout task: if loadProducts() hangs (e.g. StoreKit
+        // doesn't respond to cancellation), the spinner still stops after 10s.
+        let timeoutTask = Task {
+            try? await Task.sleep(for: .seconds(10))
+            await MainActor.run {
+                if isLoadingProducts {
+                    isLoadingProducts = false
+                }
+            }
+        }
+
+        await manager.loadProducts()
+
+        // Loading finished before timeout — cancel the timer
+        timeoutTask.cancel()
+        isLoadingProducts = false
+    }
+
+    // MARK: - Labels
+
+    private var currentPlanLabel: String {
+        switch viewModel.subscriptionStatus {
+        case .free: return ""
+        case .monthly: return cn ? "当前：月度订阅" : "Current: Monthly"
+        case .yearly: return cn ? "当前：年度订阅" : "Current: Yearly"
+        }
+    }
+
+    private var subscribeButtonLabel: String {
+        if viewModel.subscriptionStatus == .monthly && selectedProductId == SubscriptionManager.yearlyProductId {
+            return cn ? "升级到年度" : "Upgrade to Yearly"
+        }
+        return cn ? "订阅" : "Subscribe"
     }
 
     // MARK: - Sorted products (yearly first)
@@ -162,6 +244,8 @@ struct PaywallView: View {
     private func productButton(_ product: Product) -> some View {
         let isSelected = selectedProductId == product.id
         let isYearly = product.id == SubscriptionManager.yearlyProductId
+        let isCurrent = (isYearly && viewModel.subscriptionStatus == .yearly) ||
+                        (!isYearly && viewModel.subscriptionStatus == .monthly)
 
         return Button {
             withAnimation { selectedProductId = product.id }
@@ -181,6 +265,15 @@ struct PaywallView: View {
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 2)
                                 .background(Capsule().fill(ZenTheme.gooseYellow))
+                        }
+
+                        if isCurrent {
+                            Text(cn ? "当前" : "Current")
+                                .font(ZenTheme.caption(10))
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(Capsule().fill(.green))
                         }
                     }
 
@@ -212,15 +305,10 @@ struct PaywallView: View {
 
     // MARK: - Price formatting
 
-    /// Show price in CNY when Chinese, otherwise use StoreKit's displayPrice (real App Store currency).
     private func priceLabel(for product: Product, yearly: Bool) -> String {
-        let price = localizedPrice(for: product)
+        let price = product.displayPrice
         let suffix = yearly ? (cn ? "/年" : "/yr") : (cn ? "/月" : "/mo")
         return price + suffix
-    }
-
-    private func localizedPrice(for product: Product) -> String {
-        product.displayPrice
     }
 
     private func monthlyEquivalent(for product: Product) -> String {

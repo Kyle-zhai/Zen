@@ -41,25 +41,16 @@ struct SettingsView: View {
                             .foregroundStyle(.secondary)
                     }
 
-                    if !viewModel.isSubscribed {
-                        Button(cn ? "升级订阅" : "Upgrade") {
-                            localShowPaywall = true
-                        }
-                    }
-
-                    // Monthly subscriber → upgrade to yearly
-                    if viewModel.subscriptionStatus == .monthly {
+                    if !viewModel.isSubscribed || viewModel.subscriptionStatus == .monthly {
                         Button {
                             localShowPaywall = true
                         } label: {
                             HStack {
-                                Label(cn ? "升级到年度订阅" : "Upgrade to Yearly", systemImage: "arrow.up.circle")
+                                Label(subscribeActionLabel, systemImage: viewModel.isSubscribed ? "arrow.up.circle" : "sparkles")
                                 Spacer()
-                                if let yearly = viewModel.subscriptionManager.yearlyProduct {
-                                    Text("\(yearly.displayPrice)" + (cn ? "/年" : "/yr"))
-                                        .font(ZenTheme.caption(13))
-                                        .foregroundStyle(ZenTheme.gooseYellow)
-                                }
+                                Image(systemName: "chevron.right")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
                             }
                         }
                     }
@@ -137,7 +128,7 @@ struct SettingsView: View {
                         Button(cn ? "恢复购买" : "Restore Purchases") {
                             Task {
                                 await viewModel.subscriptionManager.restorePurchases()
-                                viewModel.syncSubscriptionStatus()
+                                await MainActor.run { viewModel.syncSubscriptionStatus() }
                             }
                         }
                     }
@@ -223,6 +214,14 @@ struct SettingsView: View {
             }
         }
         .padding(.vertical, 4)
+    }
+
+    private var subscribeActionLabel: String {
+        switch viewModel.subscriptionStatus {
+        case .free: return cn ? "升级订阅" : "Upgrade"
+        case .monthly: return cn ? "升级到年度订阅" : "Upgrade to Yearly"
+        case .yearly: return cn ? "管理订阅" : "Manage Subscription"
+        }
     }
 
     private var subscriptionLabel: String {
