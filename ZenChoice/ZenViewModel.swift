@@ -162,15 +162,11 @@ class ZenViewModel {
         loadLocalArchive()
         loadDailyUsage()
 
-        // Load products in background — don't block app launch if StoreKit hangs
-        Task {
-            await subscriptionManager.loadProducts()
-        }
-
         // Check existing entitlements (local, fast)
         await subscriptionManager.refreshStatus()
         syncSubscriptionStatus()
 
+        // Listen for transaction updates in background
         Task {
             await subscriptionManager.listenForTransactions()
             await MainActor.run { syncSubscriptionStatus() }

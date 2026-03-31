@@ -4,11 +4,6 @@ import StoreKit
 struct PaywallView: View {
     @Environment(ZenViewModel.self) private var viewModel
     @Environment(\.dismiss) private var dismiss
-    @State private var selectedProductId: String = SubscriptionManager.yearlyProductId
-    @State private var isPurchasing = false
-    @State private var errorMessage: String?
-    @State private var isLoadingProducts = false
-    @State private var hasAttemptedLoad = false
 
     private var cn: Bool { viewModel.L.isChinese }
     private var manager: SubscriptionManager { viewModel.subscriptionManager }
@@ -80,81 +75,29 @@ struct PaywallView: View {
                         .background(RoundedRectangle(cornerRadius: 16).fill(.white.opacity(0.7)))
                         .padding(.horizontal)
 
-                        // Plan picker
-                        VStack(spacing: 12) {
-                            if isLoadingProducts {
-                                ProgressView()
-                                    .padding()
-                                Text(cn ? "正在加载价格…" : "Loading prices…")
-                                    .font(ZenTheme.caption(13))
-                                    .foregroundStyle(.secondary)
-                            } else if manager.products.isEmpty {
-                                VStack(spacing: 12) {
-                                    Image(systemName: "wifi.exclamationmark")
-                                        .font(.title2)
-                                        .foregroundStyle(.secondary)
-                                    Text(cn ? "无法加载订阅产品，请检查网络后重试" : "Unable to load products. Please check your connection and try again.")
-                                        .font(ZenTheme.bodyFont(14))
-                                        .foregroundStyle(.secondary)
-                                        .multilineTextAlignment(.center)
-                                    Button(cn ? "重试" : "Retry") {
-                                        Task { await loadProducts() }
-                                    }
-                                    .font(ZenTheme.bodyFont(14))
-                                    .foregroundStyle(ZenTheme.gooseYellow)
+                        // Apple native subscription UI — handles loading, pricing, purchase
+                        SubscriptionStoreView(productIDs: [
+                            SubscriptionManager.monthlyProductId,
+                            SubscriptionManager.yearlyProductId
+                        ])
+                        .subscriptionStoreButtonLabel(.multiline)
+                        .subscriptionStorePickerItemBackground(.thinMaterial)
+                        .storeButton(.visible, for: .restorePurchases)
+                        .onInAppPurchaseCompletion { _, result in
+                            switch result {
+                            case .success(.success):
+                                await manager.refreshStatus()
+                                await MainActor.run {
+                                    viewModel.syncSubscriptionStatus()
                                 }
-                                .padding()
-                            } else {
-                                ForEach(sortedProducts, id: \.id) { product in
-                                    productButton(product)
-                                }
+                                HapticManager.success()
+                                dismiss()
+                            default:
+                                break
                             }
                         }
+                        .frame(minHeight: 300)
                         .padding(.horizontal)
-
-                        // Subscribe button
-                        Button {
-                            Task { await purchase() }
-                        } label: {
-                            Group {
-                                if isPurchasing {
-                                    ProgressView()
-                                        .tint(ZenTheme.inkBlack)
-                                } else {
-                                    Text(subscribeButtonLabel)
-                                        .font(ZenTheme.calligraphy(18))
-                                        .foregroundStyle(ZenTheme.inkBlack)
-                                }
-                            }
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 16)
-                            .background(
-                                RoundedRectangle(cornerRadius: 14)
-                                    .fill(ZenTheme.gooseYellow)
-                                    .shadow(color: ZenTheme.gooseYellow.opacity(0.4), radius: 12, y: 6)
-                            )
-                        }
-                        .disabled(isPurchasing || manager.products.isEmpty || isLoadingProducts)
-                        .opacity(manager.products.isEmpty || isLoadingProducts ? 0.5 : 1)
-                        .padding(.horizontal, 30)
-
-                        // Restore
-                        Button(cn ? "恢复购买" : "Restore Purchases") {
-                            Task {
-                                await manager.restorePurchases()
-                                await MainActor.run { viewModel.syncSubscriptionStatus() }
-                            }
-                        }
-                        .font(ZenTheme.caption(13))
-                        .foregroundStyle(ZenTheme.distantMountain.opacity(0.5))
-
-                        if let error = errorMessage {
-                            Text(error)
-                                .font(ZenTheme.caption(12))
-                                .foregroundStyle(.red.opacity(0.8))
-                                .multilineTextAlignment(.center)
-                                .padding(.horizontal)
-                        }
 
                         Text(cn
                              ? "订阅将通过 Apple ID 扣款，到期前24小时自动续费\n可随时在系统设置 > Apple ID > 订阅中取消"
@@ -183,37 +126,7 @@ struct PaywallView: View {
                     }
                 }
             }
-            .task {
-                guard !hasAttemptedLoad else { return }
-                hasAttemptedLoad = true
-                if manager.products.isEmpty {
-                    await loadProducts()
-                }
-            }
         }
-    }
-
-    // MARK: - Load products (with 10s UI timeout)
-
-    private func loadProducts() async {
-        isLoadingProducts = true
-
-        // Separate timeout task: if loadProducts() hangs (e.g. StoreKit
-        // doesn't respond to cancellation), the spinner still stops after 10s.
-        let timeoutTask = Task {
-            try? await Task.sleep(for: .seconds(10))
-            await MainActor.run {
-                if isLoadingProducts {
-                    isLoadingProducts = false
-                }
-            }
-        }
-
-        await manager.loadProducts()
-
-        // Loading finished before timeout — cancel the timer
-        timeoutTask.cancel()
-        isLoadingProducts = false
     }
 
     // MARK: - Labels
@@ -224,131 +137,6 @@ struct PaywallView: View {
         case .monthly: return cn ? "当前：月度订阅" : "Current: Monthly"
         case .yearly: return cn ? "当前：年度订阅" : "Current: Yearly"
         }
-    }
-
-    private var subscribeButtonLabel: String {
-        if viewModel.subscriptionStatus == .monthly && selectedProductId == SubscriptionManager.yearlyProductId {
-            return cn ? "升级到年度" : "Upgrade to Yearly"
-        }
-        return cn ? "订阅" : "Subscribe"
-    }
-
-    // MARK: - Sorted products (yearly first)
-
-    private var sortedProducts: [Product] {
-        manager.products.sorted { a, _ in a.id == SubscriptionManager.yearlyProductId }
-    }
-
-    // MARK: - Product button
-
-    private func productButton(_ product: Product) -> some View {
-        let isSelected = selectedProductId == product.id
-        let isYearly = product.id == SubscriptionManager.yearlyProductId
-        let isCurrent = (isYearly && viewModel.subscriptionStatus == .yearly) ||
-                        (!isYearly && viewModel.subscriptionStatus == .monthly)
-
-        return Button {
-            withAnimation { selectedProductId = product.id }
-            HapticManager.selection()
-        } label: {
-            HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    HStack(spacing: 6) {
-                        Text(isYearly ? (cn ? "年度订阅" : "Yearly") : (cn ? "月度订阅" : "Monthly"))
-                            .font(ZenTheme.bodyFont(15))
-                            .foregroundStyle(ZenTheme.inkBlack)
-
-                        if isYearly {
-                            Text(savingsPercent)
-                                .font(ZenTheme.caption(11))
-                                .foregroundStyle(.white)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 2)
-                                .background(Capsule().fill(ZenTheme.gooseYellow))
-                        }
-
-                        if isCurrent {
-                            Text(cn ? "当前" : "Current")
-                                .font(ZenTheme.caption(10))
-                                .foregroundStyle(.white)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 2)
-                                .background(Capsule().fill(.green))
-                        }
-                    }
-
-                    if isYearly {
-                        Text(monthlyEquivalent(for: product))
-                            .font(ZenTheme.caption(11))
-                            .foregroundStyle(ZenTheme.gooseYellow)
-                    }
-                }
-
-                Spacer()
-
-                Text(priceLabel(for: product, yearly: isYearly))
-                    .font(ZenTheme.calligraphy(16))
-                    .foregroundStyle(ZenTheme.inkBlack)
-            }
-            .padding(16)
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(isSelected ? ZenTheme.gooseYellow.opacity(0.15) : .white.opacity(0.5))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(isSelected ? ZenTheme.gooseYellow : ZenTheme.distantMountain.opacity(0.1),
-                                    lineWidth: isSelected ? 2 : 1)
-                    )
-            )
-        }
-    }
-
-    // MARK: - Price formatting
-
-    private func priceLabel(for product: Product, yearly: Bool) -> String {
-        let price = product.displayPrice
-        let suffix = yearly ? (cn ? "/年" : "/yr") : (cn ? "/月" : "/mo")
-        return price + suffix
-    }
-
-    private func monthlyEquivalent(for product: Product) -> String {
-        let monthly = product.price / 12
-        let formatted = monthly.formatted(.currency(code: product.priceFormatStyle.currencyCode ?? "USD"))
-        let suffix = cn ? "/月" : "/mo"
-        return "≈\(formatted)\(suffix)"
-    }
-
-    private var savingsPercent: String {
-        guard let yearly = manager.yearlyProduct, let monthly = manager.monthlyProduct else {
-            return cn ? "省33%" : "Save 33%"
-        }
-        let yearlyDouble = NSDecimalNumber(decimal: yearly.price).doubleValue
-        let monthlyDouble = NSDecimalNumber(decimal: monthly.price).doubleValue * 12
-        guard monthlyDouble > 0 else { return "" }
-        let pct = Int(((monthlyDouble - yearlyDouble) / monthlyDouble) * 100)
-        return cn ? "省\(pct)%" : "Save \(pct)%"
-    }
-
-    // MARK: - Purchase
-
-    private func purchase() async {
-        guard let product = manager.products.first(where: { $0.id == selectedProductId }) else { return }
-        isPurchasing = true
-        errorMessage = nil
-
-        do {
-            let success = try await manager.purchase(product)
-            if success {
-                await MainActor.run { viewModel.syncSubscriptionStatus() }
-                HapticManager.success()
-                dismiss()
-            }
-        } catch {
-            errorMessage = cn ? "购买失败，请重试" : "Purchase failed, please try again"
-            HapticManager.error()
-        }
-
-        isPurchasing = false
     }
 
     // MARK: - Feature row
