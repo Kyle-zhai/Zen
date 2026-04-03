@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZenChoice - Logging in...</title>
+<style>
+  body { font-family: -apple-system, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #f5f0e8; }
+  .card { text-align: center; padding: 40px; }
+  .spinner { width: 32px; height: 32px; border: 3px solid #ddd; border-top: 3px solid #333; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  p { color: #666; font-size: 15px; }
+  a { color: #b8860b; text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="spinner"></div>
+  <p id="msg">正在登录…</p>
+</div>
+<script>
+// Supabase magic link redirects with tokens in the URL hash fragment
+// e.g. #access_token=xxx&refresh_token=xxx&type=magiclink
+const hash = window.location.hash.substring(1);
+const params = new URLSearchParams(hash);
+const accessToken = params.get('access_token');
+const refreshToken = params.get('refresh_token');
+
+if (accessToken && refreshToken) {
+  // Try to open the iOS app via Universal Link
+  const appUrl = `https://kyle-zhai.github.io/Zen/auth?access_token=${accessToken}&refresh_token=${refreshToken}`;
+
+  // Also try custom URL scheme as fallback
+  const customUrl = `zenchoice://auth?access_token=${accessToken}&refresh_token=${refreshToken}`;
+
+  document.getElementById('msg').innerHTML = '登录成功！正在跳转到 App…<br><br><a href="' + customUrl + '">如果没有自动跳转，点击这里</a>';
+
+  // Try Universal Link first
+  window.location.href = customUrl;
+} else {
+  document.getElementById('msg').innerHTML = '链接无效或已过期<br><br><a href="javascript:window.close()">关闭</a>';
+}
+</script>
+</body>
+</html>
