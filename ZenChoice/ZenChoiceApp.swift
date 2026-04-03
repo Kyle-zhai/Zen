@@ -8,6 +8,9 @@ struct ZenChoiceApp: App {
         WindowGroup {
             ContentView()
                 .environment(viewModel)
+                .onOpenURL { url in
+                    viewModel.handleDeepLink(url: url)
+                }
         }
     }
 }

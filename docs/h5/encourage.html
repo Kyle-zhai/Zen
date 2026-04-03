@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>禅意 · 为 ta 加持</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #F5F6FA;
+            color: #1E272E;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        .container { max-width: 400px; width: 100%; }
+        .header { text-align: center; padding: 30px 0 20px; }
+        .header .icon { font-size: 48px; }
+        .header h2 { font-size: 20px; margin: 12px 0 4px; font-weight: 700; }
+        .header .wish { font-size: 22px; font-weight: 800; font-family: serif; margin: 8px 0; }
+        .header .sub { color: #888; font-size: 14px; }
+        .section { margin: 16px 0; }
+        .section label { font-size: 12px; color: #888; display: block; margin-bottom: 8px; }
+        .perspectives { display: flex; flex-wrap: wrap; gap: 8px; }
+        .perspectives button {
+            border: 1px solid #ddd; background: #fff; border-radius: 8px;
+            padding: 8px 14px; font-size: 13px; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .perspectives button.active { background: #1E272E; color: #fff; border-color: #1E272E; }
+        .custom-input, textarea, .name-input {
+            width: 100%; border: 1px solid #eee; border-radius: 10px;
+            padding: 12px; font-size: 15px; background: #fff;
+            font-family: inherit; resize: none;
+        }
+        textarea { min-height: 80px; }
+        .ai-btn {
+            display: inline-flex; align-items: center; gap: 4px;
+            border: 1px solid #F6E58D; background: transparent; border-radius: 20px;
+            padding: 6px 14px; font-size: 13px; color: #C9A000; cursor: pointer;
+            margin-top: 8px;
+        }
+        .ai-btn:disabled { opacity: 0.5; }
+        .voice-section { display: flex; align-items: center; gap: 12px; }
+        .voice-btn {
+            border: none; background: #f0f0f0; border-radius: 8px;
+            padding: 8px 16px; font-size: 14px; cursor: pointer;
+        }
+        .voice-btn.recording { background: #ff4444; color: #fff; }
+        .toggle-row { display: flex; align-items: center; justify-content: space-between; }
+        .submit-btn {
+            width: 100%; padding: 14px; border: none; border-radius: 14px;
+            background: #1E272E; color: #fff; font-size: 16px; font-weight: 600;
+            cursor: pointer; margin-top: 20px;
+        }
+        .submit-btn:disabled { opacity: 0.5; }
+        .banner {
+            margin-top: 30px; padding: 16px; background: #fff; border-radius: 12px;
+            text-align: center; width: 100%;
+        }
+        .banner a { color: #C9A000; text-decoration: none; font-weight: 600; }
+        .success { text-align: center; padding: 60px 0; }
+        .success .icon { font-size: 64px; }
+        .success h2 { margin: 16px 0 8px; }
+        .hidden { display: none; }
+        .error { color: #ff4444; font-size: 13px; margin-top: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container" id="form-page">
+        <div class="header">
+            <div class="icon">🙏</div>
+            <div class="sub" id="sub-text">为 ta 加持吧！</div>
+            <div class="wish" id="wish-text">...</div>
+        </div>
+
+        <div class="section">
+            <label id="perspective-label">选一个身份视角</label>
+            <div class="perspectives" id="perspectives"></div>
+            <input class="custom-input" id="custom-perspective" placeholder="自定义..." style="margin-top: 8px;">
+        </div>
+
+        <div class="section">
+            <label id="content-label">写一句加持</label>
+            <textarea id="content" placeholder="写点什么..."></textarea>
+            <button class="ai-btn" id="ai-btn" onclick="aiGenerate()">✨ AI帮我写</button>
+        </div>
+
+        <div class="section">
+            <label>录一段语音（可选，15秒）</label>
+            <div class="voice-section">
+                <button class="voice-btn" id="voice-btn" onclick="toggleVoice()">🎙 录音</button>
+                <span id="voice-duration"></span>
+                <button class="voice-btn hidden" id="voice-delete" onclick="deleteVoice()">🗑</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="toggle-row">
+                <label>匿名</label>
+                <input type="checkbox" id="anonymous" checked>
+            </div>
+            <input class="name-input hidden" id="sender-name" placeholder="你的名字" style="margin-top: 8px;">
+        </div>
+
+        <button class="submit-btn" id="submit-btn" onclick="submit()" disabled>匿名提交</button>
+        <div class="error hidden" id="error-msg"></div>
+    </div>
+
+    <div class="container hidden" id="success-page">
+        <div class="success">
+            <div class="icon">✅</div>
+            <h2>加持已送达</h2>
+            <p style="color: #888">你的祝福已经传递给朋友了</p>
+        </div>
+    </div>
+
+    <div class="banner">
+        <p>下载「禅意 ZenChoice」获得更多功能</p>
+        <a href="https://apps.apple.com/app/zenchoice/id000000000">前往 App Store →</a>
+    </div>
+
+<script>
+// Config — fill in Supabase credentials
+const SUPABASE_URL = '';
+const SUPABASE_KEY = '';
+const QWEN_KEY = '';
+
+const params = new URLSearchParams(window.location.search);
+const requestId = params.get('id');
+let requestData = null;
+let selectedPerspective = '';
+let mediaRecorder = null;
+let audioChunks = [];
+let voiceBlob = null;
+let voiceDuration = 0;
+let voiceTimer = null;
+
+const perspectivesCN = ['毒舌闺蜜', '慈祥奶奶', '未来的ta', '哲学家', '段子手'];
+const perspectivesEN = ['Sassy BFF', 'Loving Grandma', 'Future Self', 'Philosopher', 'Comedian'];
+
+async function init() {
+    if (!requestId || !SUPABASE_URL) { document.body.innerHTML = '<p style="text-align:center;padding:40px">链接无效</p>'; return; }
+
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/courage_requests?id=eq.${requestId}&select=*`, {
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+    });
+    const rows = await res.json();
+    if (!rows.length) { document.body.innerHTML = '<p style="text-align:center;padding:40px">这段缘分已圆满</p>'; return; }
+    requestData = rows[0];
+
+    document.getElementById('wish-text').textContent = `「${requestData.wish}」`;
+
+    const isCN = /[\u4e00-\u9fff]/.test(requestData.wish);
+    const persp = isCN ? perspectivesCN : perspectivesEN;
+    const container = document.getElementById('perspectives');
+    persp.forEach(p => {
+        const btn = document.createElement('button');
+        btn.textContent = p;
+        btn.onclick = () => selectPerspective(p, btn);
+        container.appendChild(btn);
+    });
+
+    document.getElementById('anonymous').addEventListener('change', e => {
+        document.getElementById('sender-name').classList.toggle('hidden', e.target.checked);
+        updateSubmitLabel();
+    });
+    document.getElementById('content').addEventListener('input', updateSubmitBtn);
+
+    // Hide voice if not supported
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        document.getElementById('voice-btn').parentElement.parentElement.classList.add('hidden');
+    }
+}
+
+function selectPerspective(p, btn) {
+    document.querySelectorAll('.perspectives button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedPerspective = p;
+    document.getElementById('custom-perspective').value = '';
+}
+
+function updateSubmitBtn() {
+    document.getElementById('submit-btn').disabled = !document.getElementById('content').value.trim();
+}
+
+function updateSubmitLabel() {
+    const anon = document.getElementById('anonymous').checked;
+    document.getElementById('submit-btn').textContent = anon ? '匿名提交' : '署名提交';
+}
+
+async function aiGenerate() {
+    const persp = document.getElementById('custom-perspective').value || selectedPerspective;
+    if (!persp) { showError('请先选择一个视角'); return; }
+    if (!QWEN_KEY) { showError('AI暂不可用'); return; }
+
+    const btn = document.getElementById('ai-btn');
+    btn.disabled = true; btn.textContent = '⏳ 生成中...';
+
+    try {
+        const res = await fetch('https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${QWEN_KEY}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                model: 'qwen-turbo-latest',
+                messages: [
+                    { role: 'system', content: '你是一个有趣的鼓励大师。回复时直接输出内容，不加前缀。' },
+                    { role: 'user', content: `用户想要「${requestData.wish}」。用「${persp}」的视角写一句简短有趣的鼓励，50字以内。` }
+                ],
+                temperature: 0.9, max_tokens: 200
+            })
+        });
+        const data = await res.json();
+        const content = data.choices?.[0]?.message?.content;
+        if (content) document.getElementById('content').value = content.trim();
+        updateSubmitBtn();
+    } catch (e) { showError('AI生成失败'); }
+    btn.disabled = false; btn.textContent = '✨ AI帮我写';
+}
+
+async function toggleVoice() {
+    const btn = document.getElementById('voice-btn');
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+        mediaRecorder.stop(); clearInterval(voiceTimer);
+        btn.textContent = '▶ 播放'; btn.classList.remove('recording');
+        document.getElementById('voice-delete').classList.remove('hidden');
+        return;
+    }
+    if (voiceBlob) { new Audio(URL.createObjectURL(voiceBlob)).play(); return; }
+
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = []; voiceDuration = 0;
+        mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+        mediaRecorder.onstop = () => {
+            voiceBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            stream.getTracks().forEach(t => t.stop());
+        };
+        mediaRecorder.start();
+        btn.textContent = '⏹ 停止'; btn.classList.add('recording');
+        voiceTimer = setInterval(() => {
+            voiceDuration += 0.1;
+            document.getElementById('voice-duration').textContent = voiceDuration.toFixed(1) + 's';
+            if (voiceDuration >= 15) { mediaRecorder.stop(); clearInterval(voiceTimer); btn.textContent = '▶ 播放'; btn.classList.remove('recording'); }
+        }, 100);
+    } catch (e) { showError('无法访问麦克风'); }
+}
+
+function deleteVoice() {
+    voiceBlob = null; voiceDuration = 0;
+    document.getElementById('voice-btn').textContent = '🎙 录音';
+    document.getElementById('voice-duration').textContent = '';
+    document.getElementById('voice-delete').classList.add('hidden');
+}
+
+async function submit() {
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true; btn.textContent = '提交中...';
+
+    const persp = document.getElementById('custom-perspective').value || selectedPerspective;
+    const content = document.getElementById('content').value.trim();
+    const anon = document.getElementById('anonymous').checked;
+    const name = anon ? null : document.getElementById('sender-name').value.trim();
+    const deviceId = getDeviceId();
+
+    let voiceUrl = null;
+    if (voiceBlob) {
+        try {
+            const respId = crypto.randomUUID();
+            const path = `voices/${requestId}/${respId}.webm`;
+            await fetch(`${SUPABASE_URL}/storage/v1/object/voice-messages/${path}`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${SUPABASE_KEY}`, 'apikey': SUPABASE_KEY, 'Content-Type': 'audio/webm' },
+                body: voiceBlob
+            });
+            voiceUrl = `${SUPABASE_URL}/storage/v1/object/public/voice-messages/${path}`;
+        } catch (e) { /* voice upload failed, continue without */ }
+    }
+
+    try {
+        const body = {
+            request_id: requestId, content, perspective: persp || null,
+            emoji_stamp: null, voice_url: voiceUrl,
+            is_anonymous: anon, sender_name: name, sender_device_id: deviceId
+        };
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/courage_responses`, {
+            method: 'POST',
+            headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        if (res.ok || res.status === 201) {
+            document.getElementById('form-page').classList.add('hidden');
+            document.getElementById('success-page').classList.remove('hidden');
+        } else {
+            const err = await res.text();
+            if (err.includes('unique')) showError('你已为此加持过');
+            else if (err.includes('response_count')) showError('这段缘分已圆满');
+            else showError('提交失败，请重试');
+            btn.disabled = false; updateSubmitLabel();
+        }
+    } catch (e) { showError('网络错误'); btn.disabled = false; updateSubmitLabel(); }
+}
+
+function showError(msg) {
+    const el = document.getElementById('error-msg');
+    el.textContent = msg; el.classList.remove('hidden');
+    setTimeout(() => el.classList.add('hidden'), 3000);
+}
+
+function getDeviceId() {
+    let id = localStorage.getItem('zen_device_id');
+    if (!id) { id = crypto.randomUUID(); localStorage.setItem('zen_device_id', id); }
+    return id;
+}
+
+init();
+</script>
+</body>
+</html>

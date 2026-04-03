@@ -1,6 +1,7 @@
 import Foundation
 import StoreKit
 
+@MainActor
 @Observable
 class SubscriptionManager {
 
@@ -46,16 +47,7 @@ class SubscriptionManager {
         await refreshStatus()
     }
 
-    func listenForTransactions() async {
-        for await result in Transaction.updates {
-            if let transaction = try? checkVerified(result) {
-                await transaction.finish()
-            }
-            await refreshStatus()
-        }
-    }
-
-    private func checkVerified<T>(_ result: VerificationResult<T>) throws -> T {
+    private nonisolated func checkVerified<T>(_ result: VerificationResult<T>) throws -> T {
         switch result {
         case .unverified:
             throw StoreError.failedVerification

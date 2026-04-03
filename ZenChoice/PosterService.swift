@@ -19,5 +19,13 @@ enum PosterService {
         renderer.scale = 3.0
         return renderer.uiImage
     }
+
+    @MainActor
+    static func renderWitnessCard(wish: String, aiSummary: String, responses: [CourageResponse], isChinese: Bool) -> UIImage? {
+        let view = WitnessCardView(wish: wish, aiSummary: aiSummary, responses: responses, isChinese: isChinese)
+        let renderer = ImageRenderer(content: view)
+        renderer.scale = 3
+        return renderer.uiImage
+    }
 }
 #endif

@@ -12,12 +12,10 @@ struct MainContentView: View {
             ZenBackground()
 
             VStack(spacing: 0) {
-                headerBar
-
                 ScrollViewReader { proxy in
                     ScrollView(showsIndicators: false) {
                         VStack(spacing: 32) {
-                            Spacer().frame(height: 24)
+                            headerBar
 
                             inputArea(wish: $vm.wish)
 
@@ -58,6 +56,47 @@ struct MainContentView: View {
         .sheet(isPresented: $vm.showArchive) {
             CourageArchiveView().environment(viewModel)
         }
+        .sheet(isPresented: $vm.showInbox) {
+            InboxView().environment(viewModel)
+        }
+        .sheet(isPresented: $vm.showEncourageRequest) {
+            if let result = vm.currentResult {
+                EncourageRequestView(
+                    wish: result.wish,
+                    socialManager: viewModel.socialManager,
+                    isChinese: cn,
+                    isSubscribed: viewModel.isSubscribed
+                )
+            }
+        }
+        .sheet(isPresented: $vm.showWitnessRequest) {
+            if let result = vm.currentResult {
+                WitnessRequestView(
+                    wish: result.wish,
+                    aiSummary: viewModel.generateAISummary(),
+                    socialManager: viewModel.socialManager,
+                    isChinese: cn,
+                    maxSignatures: viewModel.isSubscribed ? 3 : 1
+                )
+            }
+        }
+        .sheet(isPresented: $vm.showRespondSheet) {
+            if let request = vm.deepLinkRequest {
+                RespondView(
+                    request: request,
+                    socialManager: viewModel.socialManager,
+                    isChinese: cn
+                )
+            }
+        }
+        .sheet(isPresented: $vm.showBonds) {
+            BondView().environment(viewModel)
+        }
+        .sheet(isPresented: $vm.showGuess) {
+            if let anon = vm.pendingAnonymousEncouragement {
+                GuessView(encouragement: anon).environment(viewModel)
+            }
+        }
         #if os(iOS)
         .sheet(isPresented: $vm.showShareSheet) {
             if let img = vm.shareCardImage {
@@ -75,15 +114,8 @@ struct MainContentView: View {
     // MARK: - Header
 
     private var headerBar: some View {
-        HStack {
-            Button { viewModel.showArchive = true } label: {
-                Image(systemName: "book.closed")
-                    .font(.title3)
-                    .foregroundStyle(ZenTheme.distantMountain.opacity(0.6))
-            }
-
-            Spacer()
-
+        ZStack {
+            // Title — absolute center, unaffected by icons
             VStack(spacing: 2) {
                 Text(cn ? "禅意" : "ZenChoice")
                     .font(ZenTheme.calligraphy(28))
@@ -94,12 +126,47 @@ struct MainContentView: View {
                     .tracking(cn ? 2 : 4)
             }
 
-            Spacer()
+            // Icons on sides
+            HStack {
+                HStack(spacing: 14) {
+                    Button { viewModel.showArchive = true } label: {
+                        Image(systemName: "book.closed")
+                            .font(.title3)
+                            .foregroundStyle(ZenTheme.distantMountain.opacity(0.6))
+                    }
 
-            Button { viewModel.showSettings = true } label: {
-                Image(systemName: "gearshape")
-                    .font(.title3)
-                    .foregroundStyle(ZenTheme.distantMountain.opacity(0.6))
+                    Button { viewModel.showInbox = true } label: {
+                        ZStack(alignment: .topTrailing) {
+                            Image(systemName: "tray")
+                                .font(.title3)
+                                .foregroundStyle(ZenTheme.distantMountain.opacity(0.6))
+                            if viewModel.socialManager.unreadCount > 0 {
+                                Text("\(viewModel.socialManager.unreadCount)")
+                                    .font(.system(size: 9, weight: .bold))
+                                    .foregroundStyle(.white)
+                                    .padding(3)
+                                    .background(Circle().fill(.red))
+                                    .offset(x: 6, y: -6)
+                            }
+                        }
+                    }
+                }
+
+                Spacer()
+
+                HStack(spacing: 14) {
+                    Button { viewModel.showBonds = true } label: {
+                        Image(systemName: "person.2")
+                            .font(.title3)
+                            .foregroundStyle(ZenTheme.distantMountain.opacity(0.6))
+                    }
+
+                    Button { viewModel.showSettings = true } label: {
+                        Image(systemName: "gearshape")
+                            .font(.title3)
+                            .foregroundStyle(ZenTheme.distantMountain.opacity(0.6))
+                    }
+                }
             }
         }
         .padding(.horizontal, 20)
@@ -199,11 +266,78 @@ struct MainContentView: View {
             dividerDecoration
 
             ForEach(Array(result.dimensions.enumerated()), id: \.element.id) { index, dim in
-                ResultCardView(
-                    dimensionResult: dim,
-                    delay: Double(index) * 0.12,
-                    onShare: { viewModel.generateShareCard(dimensionResult: dim) }
-                )
+                VStack(spacing: 8) {
+                    ResultCardView(
+                        dimensionResult: dim,
+                        delay: Double(index) * 0.12,
+                        onShare: { viewModel.generateShareCard(dimensionResult: dim) }
+                    )
+
+                    // "Guess who" button for anonymous friend dimension
+                    if dim.dimensionId == "anonymous_friend", viewModel.pendingAnonymousEncouragement != nil {
+                        Button {
+                            viewModel.showGuess = true
+                        } label: {
+                            HStack(spacing: 6) {
+                                Image(systemName: "person.fill.questionmark")
+                                Text(cn ? "猜猜是谁" : "Guess Who")
+                            }
+                            .font(ZenTheme.bodyFont(13))
+                            .foregroundStyle(ZenTheme.gooseYellow)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(
+                                Capsule()
+                                    .fill(ZenTheme.gooseYellow.opacity(0.15))
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Social action buttons
+            HStack(spacing: 10) {
+                Button {
+                    if viewModel.canCreateSocialRequest {
+                        viewModel.showEncourageRequest = true
+                    } else {
+                        viewModel.showPaywall = true
+                    }
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "hands.sparkles")
+                        Text(cn ? "求加持" : "Blessing")
+                    }
+                    .font(ZenTheme.bodyFont(14))
+                    .foregroundStyle(ZenTheme.inkBlack)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(ZenTheme.gooseYellow.opacity(0.2))
+                    )
+                }
+
+                Button {
+                    if viewModel.canCreateSocialRequest {
+                        viewModel.showWitnessRequest = true
+                    } else {
+                        viewModel.showPaywall = true
+                    }
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "signature")
+                        Text(cn ? "邀请见证" : "Witness")
+                    }
+                    .font(ZenTheme.bodyFont(14))
+                    .foregroundStyle(ZenTheme.inkBlack)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(ZenTheme.gooseYellow.opacity(0.2))
+                    )
+                }
             }
 
             if !viewModel.isSubscribed {

@@ -128,9 +128,25 @@ struct SettingsView: View {
                         Button(cn ? "恢复购买" : "Restore Purchases") {
                             Task {
                                 await viewModel.subscriptionManager.restorePurchases()
-                                await MainActor.run { viewModel.syncSubscriptionStatus() }
+                                viewModel.syncSubscriptionStatus()
                             }
                         }
+                    }
+                }
+
+                Section(cn ? "账号" : "Account") {
+                    if let profile = viewModel.authManager.profile {
+                        LabeledContent(cn ? "昵称" : "Nickname") {
+                            Text(profile.nickname)
+                        }
+                    }
+
+                    Button(role: .destructive) {
+                        viewModel.authManager.signOut()
+                        dismiss()
+                    } label: {
+                        Label(cn ? "退出登录" : "Sign Out", systemImage: "rectangle.portrait.and.arrow.right")
+                            .foregroundStyle(.red)
                     }
                 }
 

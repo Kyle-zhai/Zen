@@ -1,4 +1,5 @@
 import SwiftUI
+import StoreKit
 
 @Observable
 class ZenViewModel {
@@ -133,6 +134,100 @@ class ZenViewModel {
     private static let archiveKey = "courageArchive"
     private static let maxArchiveCount = 30
 
+    // MARK: - Auth
+
+    let authManager = AuthManager()
+
+    // MARK: - Social
+
+    let socialManager = SocialManager()
+
+    var showInbox: Bool = false
+    var showEncourageRequest: Bool = false
+    var showWitnessRequest: Bool = false
+    var showRespondSheet: Bool = false
+    var showBonds: Bool = false
+    var showGuess: Bool = false
+    var deepLinkRequest: CourageRequest?
+    var pendingAnonymousEncouragement: AnonymousEncouragement?
+
+    private static let socialCountKey = "dailySocialCount"
+    private static let socialDateKey = "dailySocialDate"
+    var dailySocialCount: Int = 0
+
+    var socialDailyLimit: Int {
+        isSubscribed ? 999 : 2
+    }
+
+    var canCreateSocialRequest: Bool {
+        dailySocialCount < socialDailyLimit
+    }
+
+    func loadSocialUsage() {
+        let today = Calendar.current.startOfDay(for: Date())
+        let savedDate = UserDefaults.standard.object(forKey: Self.socialDateKey) as? Date ?? .distantPast
+        if Calendar.current.isDate(today, inSameDayAs: savedDate) {
+            dailySocialCount = UserDefaults.standard.integer(forKey: Self.socialCountKey)
+        } else {
+            dailySocialCount = 0
+            UserDefaults.standard.set(0, forKey: Self.socialCountKey)
+            UserDefaults.standard.set(today, forKey: Self.socialDateKey)
+        }
+    }
+
+    func incrementSocialUsage() {
+        dailySocialCount += 1
+        UserDefaults.standard.set(dailySocialCount, forKey: Self.socialCountKey)
+        let today = Calendar.current.startOfDay(for: Date())
+        UserDefaults.standard.set(today, forKey: Self.socialDateKey)
+    }
+
+    func generateAISummary() -> String {
+        guard let result = currentResult, let first = result.dimensions.first else { return "" }
+        return first.content
+    }
+
+    @MainActor
+    func handleDeepLink(url: URL) {
+        guard let destination = DeepLinkHandler.parse(url: url) else { return }
+
+        Task {
+            switch destination {
+            case .encourage(let id), .witness(let id):
+                do {
+                    deepLinkRequest = try await socialManager.fetchRequest(id: id)
+                    showRespondSheet = true
+                } catch {
+                    errorMessage = L.isChinese ? "链接已失效" : "Link expired"
+                    showError = true
+                }
+            case .bond(let fromUserId):
+                guard authManager.isLoggedIn else {
+                    errorMessage = L.isChinese ? "请先登录" : "Please sign in first"
+                    showError = true
+                    return
+                }
+                do {
+                    try await socialManager.createBond(friendUserId: fromUserId)
+                    HapticManager.success()
+                    errorMessage = L.isChinese ? "善缘已结！" : "Bond formed!"
+                    showError = true
+                } catch {
+                    errorMessage = L.isChinese ? "结缘失败" : "Bond failed"
+                    showError = true
+                }
+            case .authCallback(let accessToken, let refreshToken):
+                do {
+                    try await authManager.handleMagicLinkCallback(accessToken: accessToken, refreshToken: refreshToken)
+                    HapticManager.success()
+                } catch {
+                    errorMessage = error.localizedDescription
+                    showError = true
+                }
+            }
+        }
+    }
+
     // MARK: - Sheets
 
     var showPaywall: Bool = false
@@ -159,17 +254,33 @@ class ZenViewModel {
 
     @MainActor
     func initialize() async {
+        // Wire social manager to auth
+        socialManager.authManager = authManager
+
+        // Check profile if logged in
+        if authManager.isLoggedIn {
+            await authManager.checkProfileExists()
+            try? await socialManager.fetchBonds()
+            try? await socialManager.fetchPendingEncouragements()
+        }
+
         loadLocalArchive()
         loadDailyUsage()
+        loadSocialUsage()
 
         // Check existing entitlements (local, fast)
         await subscriptionManager.refreshStatus()
         syncSubscriptionStatus()
 
-        // Listen for transaction updates in background
-        Task {
-            await subscriptionManager.listenForTransactions()
-            await MainActor.run { syncSubscriptionStatus() }
+        // Listen for transaction updates in background and sync status
+        Task { @MainActor in
+            for await result in Transaction.updates {
+                if let transaction = try? result.payloadValue {
+                    await transaction.finish()
+                }
+                await subscriptionManager.refreshStatus()
+                syncSubscriptionStatus()
+            }
         }
     }
 
@@ -255,6 +366,24 @@ class ZenViewModel {
                 dimensionCount: dimensionCount,
                 language: appLanguage
             )
+        }
+
+        // Inject anonymous encouragement as the first dimension if available
+        if let anon = socialManager.pendingEncouragements.first, var result = currentResult {
+            let anonDimension = DimensionResult(
+                id: UUID(),
+                dimensionId: "anonymous_friend",
+                dimensionTitle: L.isChinese ? "来自好友的匿名鼓励" : "Anonymous Friend's Encouragement",
+                emoji: "💌",
+                content: anon.content
+            )
+            currentResult = EncouragementResult(
+                wish: result.wish,
+                dimensions: [anonDimension] + result.dimensions,
+                generatedAt: result.generatedAt,
+                isLLMGenerated: result.isLLMGenerated
+            )
+            pendingAnonymousEncouragement = anon
         }
 
         // Increment daily usage
