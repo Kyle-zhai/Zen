@@ -5,126 +5,227 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>禅意 · 为 ta 加持</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&display=swap');
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #F5F6FA;
-            color: #1E272E;
+            font-family: 'Noto Serif SC', -apple-system, serif;
+            background: #F5F0E8;
+            color: #1A1A2E;
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
         }
-        .container { max-width: 400px; width: 100%; }
-        .header { text-align: center; padding: 30px 0 20px; }
-        .header .icon { font-size: 48px; }
-        .header h2 { font-size: 20px; margin: 12px 0 4px; font-weight: 700; }
-        .header .wish { font-size: 22px; font-weight: 800; font-family: serif; margin: 8px 0; }
-        .header .sub { color: #888; font-size: 14px; }
-        .section { margin: 16px 0; }
-        .section label { font-size: 12px; color: #888; display: block; margin-bottom: 8px; }
+        /* Ink wash background */
+        body::before {
+            content: '';
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background:
+                radial-gradient(ellipse at 20% 10%, rgba(212,165,116,0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 90%, rgba(26,26,46,0.06) 0%, transparent 50%),
+                linear-gradient(to bottom, #F5F0E8, #EDE6D8);
+            z-index: -1;
+        }
+        /* Mountain silhouette */
+        body::after {
+            content: '';
+            position: fixed; bottom: 0; left: 0; right: 0;
+            height: 180px;
+            background: linear-gradient(to top, rgba(26,26,46,0.06), transparent);
+            clip-path: polygon(0% 100%, 0% 60%, 10% 45%, 25% 55%, 40% 30%, 55% 50%, 70% 25%, 85% 45%, 100% 35%, 100% 100%);
+            z-index: -1;
+        }
+        .container { max-width: 400px; width: 100%; margin: 0 auto; padding: 20px; }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 40px 0 24px;
+        }
+        .header .icon-wrap {
+            width: 64px; height: 64px; margin: 0 auto 16px;
+            background: radial-gradient(circle, rgba(212,165,116,0.2) 0%, transparent 70%);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .header .icon { font-size: 32px; }
+        .header .sub {
+            font-size: 13px; color: #4A5568; opacity: 0.6;
+            letter-spacing: 2px;
+        }
+        .header .wish {
+            font-size: 22px; font-weight: 900;
+            margin: 12px 0 0;
+            color: #1A1A2E;
+        }
+
+        /* Sections */
+        .section { margin: 20px 0; }
+        .section label {
+            font-size: 11px; color: #4A5568; opacity: 0.5;
+            display: block; margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
         .perspectives { display: flex; flex-wrap: wrap; gap: 8px; }
         .perspectives button {
-            border: 1px solid #ddd; background: #fff; border-radius: 8px;
-            padding: 8px 14px; font-size: 13px; cursor: pointer;
-            transition: all 0.2s;
+            border: 1px solid rgba(26,26,46,0.1);
+            background: rgba(255,255,255,0.7);
+            border-radius: 8px;
+            padding: 8px 14px; font-size: 13px;
+            font-family: inherit;
+            cursor: pointer; transition: all 0.3s;
+            backdrop-filter: blur(4px);
         }
-        .perspectives button.active { background: #1E272E; color: #fff; border-color: #1E272E; }
+        .perspectives button:hover { border-color: #D4A574; }
+        .perspectives button.active {
+            background: #1A1A2E; color: #D4A574;
+            border-color: #1A1A2E;
+        }
         .custom-input, textarea, .name-input {
-            width: 100%; border: 1px solid #eee; border-radius: 10px;
-            padding: 12px; font-size: 15px; background: #fff;
-            font-family: inherit; resize: none;
+            width: 100%;
+            border: 1px solid rgba(26,26,46,0.08);
+            border-radius: 10px;
+            padding: 12px; font-size: 15px;
+            background: rgba(255,255,255,0.6);
+            font-family: inherit;
+            resize: none;
+            backdrop-filter: blur(4px);
+            transition: border-color 0.3s;
+        }
+        .custom-input:focus, textarea:focus, .name-input:focus {
+            outline: none;
+            border-color: #D4A574;
         }
         textarea { min-height: 80px; }
         .ai-btn {
             display: inline-flex; align-items: center; gap: 4px;
-            border: 1px solid #F6E58D; background: transparent; border-radius: 20px;
-            padding: 6px 14px; font-size: 13px; color: #C9A000; cursor: pointer;
-            margin-top: 8px;
+            border: 1px solid #D4A574; background: rgba(212,165,116,0.08);
+            border-radius: 20px;
+            padding: 6px 14px; font-size: 12px;
+            color: #D4A574; cursor: pointer;
+            margin-top: 8px; font-family: inherit;
+            transition: all 0.3s;
         }
-        .ai-btn:disabled { opacity: 0.5; }
-        .voice-section { display: flex; align-items: center; gap: 12px; }
-        .voice-btn {
-            border: none; background: #f0f0f0; border-radius: 8px;
-            padding: 8px 16px; font-size: 14px; cursor: pointer;
+        .ai-btn:hover { background: rgba(212,165,116,0.15); }
+        .ai-btn:disabled { opacity: 0.4; }
+
+        .toggle-row {
+            display: flex; align-items: center; justify-content: space-between;
+            font-size: 14px;
         }
-        .voice-btn.recording { background: #ff4444; color: #fff; }
-        .toggle-row { display: flex; align-items: center; justify-content: space-between; }
+        .toggle-row input[type="checkbox"] {
+            width: 18px; height: 18px; accent-color: #D4A574;
+        }
         .submit-btn {
             width: 100%; padding: 14px; border: none; border-radius: 14px;
-            background: #1E272E; color: #fff; font-size: 16px; font-weight: 600;
-            cursor: pointer; margin-top: 20px;
+            background: #1A1A2E; color: #D4A574;
+            font-size: 16px; font-weight: 700;
+            font-family: inherit;
+            cursor: pointer; margin-top: 24px;
+            letter-spacing: 2px;
+            transition: opacity 0.3s;
         }
-        .submit-btn:disabled { opacity: 0.5; }
+        .submit-btn:disabled { opacity: 0.4; }
+        .submit-btn:hover:not(:disabled) { opacity: 0.9; }
+
+        /* Success */
+        .success {
+            text-align: center; padding: 80px 20px;
+        }
+        .success .seal {
+            width: 72px; height: 72px; margin: 0 auto 20px;
+            border: 2px solid #D4A574; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 28px;
+        }
+        .success h2 {
+            font-size: 20px; color: #1A1A2E;
+            letter-spacing: 4px;
+        }
+        .success p { color: #4A5568; font-size: 13px; margin-top: 8px; opacity: 0.6; }
+
+        /* Banner */
         .banner {
-            margin-top: 30px; padding: 16px; background: #fff; border-radius: 12px;
-            text-align: center; width: 100%;
+            margin-top: 40px; padding: 18px;
+            background: rgba(26,26,46,0.04);
+            border-radius: 14px;
+            text-align: center;
+            border: 1px solid rgba(26,26,46,0.06);
         }
-        .banner a { color: #C9A000; text-decoration: none; font-weight: 600; }
-        .success { text-align: center; padding: 60px 0; }
-        .success .icon { font-size: 64px; }
-        .success h2 { margin: 16px 0 8px; }
+        .banner p { font-size: 12px; color: #4A5568; opacity: 0.6; }
+        .banner a {
+            display: inline-block; margin-top: 8px;
+            color: #D4A574; text-decoration: none;
+            font-weight: 700; font-size: 13px;
+            letter-spacing: 1px;
+        }
+
         .hidden { display: none; }
-        .error { color: #ff4444; font-size: 13px; margin-top: 4px; }
+        .error { color: #C44536; font-size: 12px; margin-top: 6px; text-align: center; }
+
+        /* Divider decoration */
+        .divider {
+            display: flex; align-items: center; justify-content: center;
+            gap: 8px; margin: 16px 0;
+        }
+        .divider span {
+            width: 24px; height: 1px; background: #D4A574; opacity: 0.3;
+        }
+        .divider .dot {
+            width: 4px; height: 4px; border-radius: 50%;
+            background: #D4A574; opacity: 0.5;
+        }
     </style>
 </head>
 <body>
     <div class="container" id="form-page">
         <div class="header">
-            <div class="icon">🙏</div>
-            <div class="sub" id="sub-text">为 ta 加持吧！</div>
+            <div class="icon-wrap"><div class="icon">🙏</div></div>
+            <div class="sub">为 ta 加持</div>
             <div class="wish" id="wish-text">...</div>
         </div>
 
+        <div class="divider"><span></span><div class="dot"></div><span></span></div>
+
         <div class="section">
-            <label id="perspective-label">选一个身份视角</label>
+            <label>· 选一个身份视角 ·</label>
             <div class="perspectives" id="perspectives"></div>
-            <input class="custom-input" id="custom-perspective" placeholder="自定义..." style="margin-top: 8px;">
+            <input class="custom-input" id="custom-perspective" placeholder="自定义视角..." style="margin-top: 8px;">
         </div>
 
         <div class="section">
-            <label id="content-label">写一句加持</label>
+            <label>· 写一句加持 ·</label>
             <textarea id="content" placeholder="写点什么..."></textarea>
-            <button class="ai-btn" id="ai-btn" onclick="aiGenerate()">✨ AI帮我写</button>
-        </div>
-
-        <div class="section">
-            <label>录一段语音（可选，15秒）</label>
-            <div class="voice-section">
-                <button class="voice-btn" id="voice-btn" onclick="toggleVoice()">🎙 录音</button>
-                <span id="voice-duration"></span>
-                <button class="voice-btn hidden" id="voice-delete" onclick="deleteVoice()">🗑</button>
-            </div>
+            <button class="ai-btn" id="ai-btn" onclick="aiGenerate()">✦ AI代笔</button>
         </div>
 
         <div class="section">
             <div class="toggle-row">
-                <label>匿名</label>
+                <label style="margin:0">匿名</label>
                 <input type="checkbox" id="anonymous" checked>
             </div>
             <input class="name-input hidden" id="sender-name" placeholder="你的名字" style="margin-top: 8px;">
         </div>
 
-        <button class="submit-btn" id="submit-btn" onclick="submit()" disabled>匿名提交</button>
+        <button class="submit-btn" id="submit-btn" onclick="submit()" disabled>匿 名 送 出</button>
         <div class="error hidden" id="error-msg"></div>
     </div>
 
     <div class="container hidden" id="success-page">
         <div class="success">
-            <div class="icon">✅</div>
+            <div class="seal">✦</div>
             <h2>加持已送达</h2>
-            <p style="color: #888">你的祝福已经传递给朋友了</p>
+            <p>你的祝福已传递给朋友</p>
         </div>
     </div>
 
-    <div class="banner">
-        <p>下载「禅意 ZenChoice」获得更多功能</p>
-        <a href="https://apps.apple.com/app/zenchoice/id000000000">前往 App Store →</a>
+    <div class="container">
+        <div class="banner">
+            <p>禅意 ZenChoice</p>
+            <a href="https://apps.apple.com/app/zenchoice/id000000000">下载 App →</a>
+        </div>
     </div>
 
 <script>
-// Config — fill in Supabase credentials
 const SUPABASE_URL = 'https://qjpxhhjwqlrowteaguth.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_GB0muX_x7meEZNv9VPtxaQ__HoXiYCn';
 const QWEN_KEY = '';
@@ -133,23 +234,18 @@ const params = new URLSearchParams(window.location.search);
 const requestId = params.get('id');
 let requestData = null;
 let selectedPerspective = '';
-let mediaRecorder = null;
-let audioChunks = [];
-let voiceBlob = null;
-let voiceDuration = 0;
-let voiceTimer = null;
 
 const perspectivesCN = ['毒舌闺蜜', '慈祥奶奶', '未来的ta', '哲学家', '段子手'];
 const perspectivesEN = ['Sassy BFF', 'Loving Grandma', 'Future Self', 'Philosopher', 'Comedian'];
 
 async function init() {
-    if (!requestId || !SUPABASE_URL) { document.body.innerHTML = '<p style="text-align:center;padding:40px">链接无效</p>'; return; }
+    if (!requestId || !SUPABASE_URL) { document.body.innerHTML = '<p style="text-align:center;padding:60px;font-family:serif;color:#4A5568">链接无效</p>'; return; }
 
     const res = await fetch(`${SUPABASE_URL}/rest/v1/courage_requests?id=eq.${requestId}&select=*`, {
         headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
     });
     const rows = await res.json();
-    if (!rows.length) { document.body.innerHTML = '<p style="text-align:center;padding:40px">这段缘分已圆满</p>'; return; }
+    if (!rows.length) { document.body.innerHTML = '<p style="text-align:center;padding:60px;font-family:serif;color:#4A5568">这段缘分已圆满</p>'; return; }
     requestData = rows[0];
 
     document.getElementById('wish-text').textContent = `「${requestData.wish}」`;
@@ -169,11 +265,6 @@ async function init() {
         updateSubmitLabel();
     });
     document.getElementById('content').addEventListener('input', updateSubmitBtn);
-
-    // Hide voice if not supported
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        document.getElementById('voice-btn').parentElement.parentElement.classList.add('hidden');
-    }
 }
 
 function selectPerspective(p, btn) {
@@ -189,7 +280,7 @@ function updateSubmitBtn() {
 
 function updateSubmitLabel() {
     const anon = document.getElementById('anonymous').checked;
-    document.getElementById('submit-btn').textContent = anon ? '匿名提交' : '署名提交';
+    document.getElementById('submit-btn').textContent = anon ? '匿 名 送 出' : '署 名 送 出';
 }
 
 async function aiGenerate() {
@@ -198,7 +289,7 @@ async function aiGenerate() {
     if (!QWEN_KEY) { showError('AI暂不可用'); return; }
 
     const btn = document.getElementById('ai-btn');
-    btn.disabled = true; btn.textContent = '⏳ 生成中...';
+    btn.disabled = true; btn.textContent = '⏳ 运笔中...';
 
     try {
         const res = await fetch('https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions', {
@@ -217,49 +308,13 @@ async function aiGenerate() {
         const content = data.choices?.[0]?.message?.content;
         if (content) document.getElementById('content').value = content.trim();
         updateSubmitBtn();
-    } catch (e) { showError('AI生成失败'); }
-    btn.disabled = false; btn.textContent = '✨ AI帮我写';
-}
-
-async function toggleVoice() {
-    const btn = document.getElementById('voice-btn');
-    if (mediaRecorder && mediaRecorder.state === 'recording') {
-        mediaRecorder.stop(); clearInterval(voiceTimer);
-        btn.textContent = '▶ 播放'; btn.classList.remove('recording');
-        document.getElementById('voice-delete').classList.remove('hidden');
-        return;
-    }
-    if (voiceBlob) { new Audio(URL.createObjectURL(voiceBlob)).play(); return; }
-
-    try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaRecorder = new MediaRecorder(stream);
-        audioChunks = []; voiceDuration = 0;
-        mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-        mediaRecorder.onstop = () => {
-            voiceBlob = new Blob(audioChunks, { type: 'audio/webm' });
-            stream.getTracks().forEach(t => t.stop());
-        };
-        mediaRecorder.start();
-        btn.textContent = '⏹ 停止'; btn.classList.add('recording');
-        voiceTimer = setInterval(() => {
-            voiceDuration += 0.1;
-            document.getElementById('voice-duration').textContent = voiceDuration.toFixed(1) + 's';
-            if (voiceDuration >= 15) { mediaRecorder.stop(); clearInterval(voiceTimer); btn.textContent = '▶ 播放'; btn.classList.remove('recording'); }
-        }, 100);
-    } catch (e) { showError('无法访问麦克风'); }
-}
-
-function deleteVoice() {
-    voiceBlob = null; voiceDuration = 0;
-    document.getElementById('voice-btn').textContent = '🎙 录音';
-    document.getElementById('voice-duration').textContent = '';
-    document.getElementById('voice-delete').classList.add('hidden');
+    } catch (e) { showError('AI运笔失败'); }
+    btn.disabled = false; btn.textContent = '✦ AI代笔';
 }
 
 async function submit() {
     const btn = document.getElementById('submit-btn');
-    btn.disabled = true; btn.textContent = '提交中...';
+    btn.disabled = true; btn.textContent = '送出中...';
 
     const persp = document.getElementById('custom-perspective').value || selectedPerspective;
     const content = document.getElementById('content').value.trim();
@@ -267,25 +322,13 @@ async function submit() {
     const name = anon ? null : document.getElementById('sender-name').value.trim();
     const deviceId = getDeviceId();
 
-    let voiceUrl = null;
-    if (voiceBlob) {
-        try {
-            const respId = crypto.randomUUID();
-            const path = `voices/${requestId}/${respId}.webm`;
-            await fetch(`${SUPABASE_URL}/storage/v1/object/voice-messages/${path}`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${SUPABASE_KEY}`, 'apikey': SUPABASE_KEY, 'Content-Type': 'audio/webm' },
-                body: voiceBlob
-            });
-            voiceUrl = `${SUPABASE_URL}/storage/v1/object/public/voice-messages/${path}`;
-        } catch (e) { /* voice upload failed, continue without */ }
-    }
-
     try {
         const body = {
-            request_id: requestId, content, perspective: persp || null,
-            emoji_stamp: null, voice_url: voiceUrl,
-            is_anonymous: anon, sender_name: name, sender_device_id: deviceId
+            request_id: requestId, content,
+            perspective: persp || null,
+            emoji_stamp: null, voice_url: null,
+            is_anonymous: anon, sender_name: name,
+            sender_user_id: deviceId
         };
         const res = await fetch(`${SUPABASE_URL}/rest/v1/courage_responses`, {
             method: 'POST',

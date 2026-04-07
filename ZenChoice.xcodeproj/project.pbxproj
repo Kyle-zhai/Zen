@@ -6,17 +6,91 @@
 	objectVersion = 77;
 	objects = {
 
-/* Begin PBXFileReference section */
-		EAF181B52F62EECB00210548 /* ZenChoice.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ZenChoice.app; sourceTree = BUILT_PRODUCTS_DIR; };
-/* End PBXFileReference section */
+/* Begin PBXBuildFile section */
+		011EAEF6D8A447558A0C80C9 /* LLMService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B2A8C8DB9BC3ADDA073D384 /* LLMService.swift */; };
+		070CB36F28AC410CAD915089 /* FortuneEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B0999063C8361391E96CF51 /* FortuneEngine.swift */; };
+		18D8A1264E1CCF9CACD0907B /* FortuneData.json in Resources */ = {isa = PBXBuildFile; fileRef = 82A868BA6AFB48B9DB675140 /* FortuneData.json */; };
+		231B9AFB2186A522314386B7 /* ZenTypeEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F2F96E94D03DD7110D93A9B /* ZenTypeEngine.swift */; };
+		26ABC06FAEE9FB087F1BDB89 /* CourageArchiveView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14C4B663D0C62AFB6D71E027 /* CourageArchiveView.swift */; };
+		2D1C248C50BA48D9ADE71FB9 /* ZenRadarChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1F6966FC7D54CE797CF409A /* ZenRadarChartView.swift */; };
+		34DF3774B7BEA30A14B15DEB /* DeepLinkHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE19A53A0F7834A428A22D78 /* DeepLinkHandler.swift */; };
+		35C61DBDA215F407D48EF3BA /* Products.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 49A5C59FF1AB0C889F2B5DAC /* Products.storekit */; };
+		36BDD8D8F92DF2F88738CC03 /* PosterService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51870206CF3D7E8A436A5F93 /* PosterService.swift */; };
+		3BA6A176D46401B6391F0DAC /* ResultCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08A76A910E5A738E0FEDAB48 /* ResultCardView.swift */; };
+		3CE9A566A3AE6631F3D59618 /* SubscriptionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1957CA10425975A9F7340DE6 /* SubscriptionManager.swift */; };
+		40C45A8F462E8E3AC9F937A0 /* ShareCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF11F348D8E10561CFCD2089 /* ShareCardView.swift */; };
+		44E605D2A5FED1FC9464F0E0 /* ZenTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF80498EB83FB421B1335E8 /* ZenTheme.swift */; };
+		58B97220ED10A0AF143D84B9 /* AuthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B26A4B0C37BCAD71BA22DB1 /* AuthManager.swift */; };
+		5A970BBA8A6A826A5668DA44 /* DimensionPool.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3349B9A85EA2C1BDB524AC19 /* DimensionPool.swift */; };
+		5BAAE8FFF3CED2A79F575701 /* SocialManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B2AD4A0B5EE0355C9308721 /* SocialManager.swift */; };
+		729A150EAE4793319564AD3F /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83D530576D5CF8B70831C69D /* Models.swift */; };
+		9427E70309498CDBF08B3846 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD59E0EB71DC1D5B631D2753 /* SettingsView.swift */; };
+		950783254ACAD1CF421F9C54 /* HapticManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5539C0F99BD198E49CD6433E /* HapticManager.swift */; };
+		99812033B8BD7CDC0C7E876A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CC3340C45202B29152467289 /* Assets.xcassets */; };
+		9D49C9773F85F4082731B111 /* ZenTypeTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B27CB44E8592CC8BB77EA05A /* ZenTypeTestView.swift */; };
+		9DF6852CE4E5FD941F292FD0 /* FortuneCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D0F849E5F3BB3096B698DD /* FortuneCardView.swift */; };
+		A1B2C3D4E5F60718091A2B3C /* ZenTypeAdvancedCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E5F6071809A1B2C3D4E5F6 /* ZenTypeAdvancedCardView.swift */; };
+		A1B2C3D4E5F67890AABB0002 /* InviteCodeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F67890AABB0001 /* InviteCodeManager.swift */; };
+		A1B2C3D4E5F67890AABB0004 /* InviteCodeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F67890AABB0003 /* InviteCodeView.swift */; };
+		A8393C1B5193A113C86EA4F7 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = DDFAE798503EBA7854636063 /* PrivacyInfo.xcprivacy */; };
+		AB2079B0A1A8FF695EFFDEC6 /* ZenDecisionEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9785F47388C5FF75054E3246 /* ZenDecisionEngine.swift */; };
+		B23582585E9963411A562010 /* ZenTypeData.json in Resources */ = {isa = PBXBuildFile; fileRef = 7250192776E5BA02F1EA5EB7 /* ZenTypeData.json */; };
+		B47C67DB0D4A7B3165F3CB1A /* DailyFortuneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2E837DC0AC2C5FCEEB1D604 /* DailyFortuneView.swift */; };
+		BB908440C5D4302DE92065C3 /* ZenChoiceApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2BA2B05FD7319382F26D1B0 /* ZenChoiceApp.swift */; };
+		CB1439633C68C20D8757FFC0 /* ZenTypeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 671B79895E8CE0F7F2AA1C0C /* ZenTypeView.swift */; };
+		D2013CAC861204D478127A16 /* RespondView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C56A10E68F9600622476D4B /* RespondView.swift */; };
+		E96580C581B78EABF709E19C /* ZenViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75AC5D0B9312BBBE07E7C196 /* ZenViewModel.swift */; };
+		E99308FCF29124C18190F8C3 /* CloudSyncManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B3B46A9F9E1D970D1AECDDD /* CloudSyncManager.swift */; };
+		F3EB1DD40F7AFFCF4C5B2777 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A8C13525269D9F9FAC9D986 /* ContentView.swift */; };
+		FCD863041C0D89139378D7E0 /* PaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44C10DC308FE38391B3AA5DE /* PaywallView.swift */; };
+		FDF40C1A2D801D341C3EFED2 /* MainContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9B08923024BC3E319ABAF23 /* MainContentView.swift */; };
+		FFBE6838C45240C8016826A5 /* ZenTypeCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 791C83D892129B3B56967A73 /* ZenTypeCardView.swift */; };
+		SEC0000000000000000000002 /* Secrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = SEC0000000000000000000001 /* Secrets.swift */; };
+/* End PBXBuildFile section */
 
-/* Begin PBXFileSystemSynchronizedRootGroup section */
-		EAF181B72F62EECB00210548 /* ZenChoice */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = ZenChoice;
-			sourceTree = "<group>";
-		};
-/* End PBXFileSystemSynchronizedRootGroup section */
+/* Begin PBXFileReference section */
+		08A76A910E5A738E0FEDAB48 /* ResultCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResultCardView.swift; sourceTree = "<group>"; };
+		0A8C13525269D9F9FAC9D986 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		14C4B663D0C62AFB6D71E027 /* CourageArchiveView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourageArchiveView.swift; sourceTree = "<group>"; };
+		1957CA10425975A9F7340DE6 /* SubscriptionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionManager.swift; sourceTree = "<group>"; };
+		1B2A8C8DB9BC3ADDA073D384 /* LLMService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMService.swift; sourceTree = "<group>"; };
+		1B3B46A9F9E1D970D1AECDDD /* CloudSyncManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudSyncManager.swift; sourceTree = "<group>"; };
+		1F2F96E94D03DD7110D93A9B /* ZenTypeEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZenTypeEngine.swift; sourceTree = "<group>"; };
+		3349B9A85EA2C1BDB524AC19 /* DimensionPool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DimensionPool.swift; sourceTree = "<group>"; };
+		3B0999063C8361391E96CF51 /* FortuneEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FortuneEngine.swift; sourceTree = "<group>"; };
+		3B2AD4A0B5EE0355C9308721 /* SocialManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialManager.swift; sourceTree = "<group>"; };
+		44C10DC308FE38391B3AA5DE /* PaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallView.swift; sourceTree = "<group>"; };
+		49A5C59FF1AB0C889F2B5DAC /* Products.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Products.storekit; sourceTree = "<group>"; };
+		51870206CF3D7E8A436A5F93 /* PosterService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PosterService.swift; sourceTree = "<group>"; };
+		5539C0F99BD198E49CD6433E /* HapticManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticManager.swift; sourceTree = "<group>"; };
+		5AD4D42569522956CB525783 /* ZenChoice.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ZenChoice.entitlements; sourceTree = "<group>"; };
+		671B79895E8CE0F7F2AA1C0C /* ZenTypeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZenTypeView.swift; sourceTree = "<group>"; };
+		6B26A4B0C37BCAD71BA22DB1 /* AuthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthManager.swift; sourceTree = "<group>"; };
+		7250192776E5BA02F1EA5EB7 /* ZenTypeData.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = ZenTypeData.json; sourceTree = "<group>"; };
+		75AC5D0B9312BBBE07E7C196 /* ZenViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZenViewModel.swift; sourceTree = "<group>"; };
+		791C83D892129B3B56967A73 /* ZenTypeCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZenTypeCardView.swift; sourceTree = "<group>"; };
+		7C56A10E68F9600622476D4B /* RespondView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RespondView.swift; sourceTree = "<group>"; };
+		82A868BA6AFB48B9DB675140 /* FortuneData.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = FortuneData.json; sourceTree = "<group>"; };
+		83D530576D5CF8B70831C69D /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		9785F47388C5FF75054E3246 /* ZenDecisionEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZenDecisionEngine.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F67890AABB0001 /* InviteCodeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InviteCodeManager.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F67890AABB0003 /* InviteCodeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InviteCodeView.swift; sourceTree = "<group>"; };
+		A7D0F849E5F3BB3096B698DD /* FortuneCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FortuneCardView.swift; sourceTree = "<group>"; };
+		B27CB44E8592CC8BB77EA05A /* ZenTypeTestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZenTypeTestView.swift; sourceTree = "<group>"; };
+		C2E837DC0AC2C5FCEEB1D604 /* DailyFortuneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyFortuneView.swift; sourceTree = "<group>"; };
+		CC3340C45202B29152467289 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		CD59E0EB71DC1D5B631D2753 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		CEF80498EB83FB421B1335E8 /* ZenTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZenTheme.swift; sourceTree = "<group>"; };
+		D4E5F6071809A1B2C3D4E5F6 /* ZenTypeAdvancedCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZenTypeAdvancedCardView.swift; sourceTree = "<group>"; };
+		DDFAE798503EBA7854636063 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		DE19A53A0F7834A428A22D78 /* DeepLinkHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepLinkHandler.swift; sourceTree = "<group>"; };
+		E9B08923024BC3E319ABAF23 /* MainContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainContentView.swift; sourceTree = "<group>"; };
+		EAF181B52F62EECB00210548 /* ZenChoice.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ZenChoice.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		EF11F348D8E10561CFCD2089 /* ShareCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareCardView.swift; sourceTree = "<group>"; };
+		F1F6966FC7D54CE797CF409A /* ZenRadarChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZenRadarChartView.swift; sourceTree = "<group>"; };
+		F2BA2B05FD7319382F26D1B0 /* ZenChoiceApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZenChoiceApp.swift; sourceTree = "<group>"; };
+		SEC0000000000000000000001 /* Secrets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Secrets.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		EAF181B22F62EECB00210548 /* Frameworks */ = {
@@ -45,6 +119,53 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		EAF181B72F62EECB00210548 /* ZenChoice */ = {
+			isa = PBXGroup;
+			children = (
+				CC3340C45202B29152467289 /* Assets.xcassets */,
+				6B26A4B0C37BCAD71BA22DB1 /* AuthManager.swift */,
+				0A8C13525269D9F9FAC9D986 /* ContentView.swift */,
+				14C4B663D0C62AFB6D71E027 /* CourageArchiveView.swift */,
+				C2E837DC0AC2C5FCEEB1D604 /* DailyFortuneView.swift */,
+				DE19A53A0F7834A428A22D78 /* DeepLinkHandler.swift */,
+				3349B9A85EA2C1BDB524AC19 /* DimensionPool.swift */,
+				A7D0F849E5F3BB3096B698DD /* FortuneCardView.swift */,
+				82A868BA6AFB48B9DB675140 /* FortuneData.json */,
+				3B0999063C8361391E96CF51 /* FortuneEngine.swift */,
+				1B3B46A9F9E1D970D1AECDDD /* CloudSyncManager.swift */,
+				5539C0F99BD198E49CD6433E /* HapticManager.swift */,
+				A1B2C3D4E5F67890AABB0001 /* InviteCodeManager.swift */,
+				A1B2C3D4E5F67890AABB0003 /* InviteCodeView.swift */,
+				1B2A8C8DB9BC3ADDA073D384 /* LLMService.swift */,
+				E9B08923024BC3E319ABAF23 /* MainContentView.swift */,
+				83D530576D5CF8B70831C69D /* Models.swift */,
+				44C10DC308FE38391B3AA5DE /* PaywallView.swift */,
+				51870206CF3D7E8A436A5F93 /* PosterService.swift */,
+				DDFAE798503EBA7854636063 /* PrivacyInfo.xcprivacy */,
+				49A5C59FF1AB0C889F2B5DAC /* Products.storekit */,
+				7C56A10E68F9600622476D4B /* RespondView.swift */,
+				08A76A910E5A738E0FEDAB48 /* ResultCardView.swift */,
+				SEC0000000000000000000001 /* Secrets.swift */,
+				CD59E0EB71DC1D5B631D2753 /* SettingsView.swift */,
+				EF11F348D8E10561CFCD2089 /* ShareCardView.swift */,
+				3B2AD4A0B5EE0355C9308721 /* SocialManager.swift */,
+				1957CA10425975A9F7340DE6 /* SubscriptionManager.swift */,
+				5AD4D42569522956CB525783 /* ZenChoice.entitlements */,
+				F2BA2B05FD7319382F26D1B0 /* ZenChoiceApp.swift */,
+				9785F47388C5FF75054E3246 /* ZenDecisionEngine.swift */,
+				CEF80498EB83FB421B1335E8 /* ZenTheme.swift */,
+				791C83D892129B3B56967A73 /* ZenTypeCardView.swift */,
+				D4E5F6071809A1B2C3D4E5F6 /* ZenTypeAdvancedCardView.swift */,
+				7250192776E5BA02F1EA5EB7 /* ZenTypeData.json */,
+				1F2F96E94D03DD7110D93A9B /* ZenTypeEngine.swift */,
+				B27CB44E8592CC8BB77EA05A /* ZenTypeTestView.swift */,
+				671B79895E8CE0F7F2AA1C0C /* ZenTypeView.swift */,
+				F1F6966FC7D54CE797CF409A /* ZenRadarChartView.swift */,
+				75AC5D0B9312BBBE07E7C196 /* ZenViewModel.swift */,
+			);
+			path = ZenChoice;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -59,9 +180,6 @@
 			buildRules = (
 			);
 			dependencies = (
-			);
-			fileSystemSynchronizedGroups = (
-				EAF181B72F62EECB00210548 /* ZenChoice */,
 			);
 			name = ZenChoice;
 			packageProductDependencies = (
@@ -111,6 +229,11 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				99812033B8BD7CDC0C7E876A /* Assets.xcassets in Resources */,
+				18D8A1264E1CCF9CACD0907B /* FortuneData.json in Resources */,
+				A8393C1B5193A113C86EA4F7 /* PrivacyInfo.xcprivacy in Resources */,
+				35C61DBDA215F407D48EF3BA /* Products.storekit in Resources */,
+				B23582585E9963411A562010 /* ZenTypeData.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -121,6 +244,40 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				SEC0000000000000000000002 /* Secrets.swift in Sources */,
+				A1B2C3D4E5F67890AABB0004 /* InviteCodeView.swift in Sources */,
+				A1B2C3D4E5F67890AABB0002 /* InviteCodeManager.swift in Sources */,
+				2D1C248C50BA48D9ADE71FB9 /* ZenRadarChartView.swift in Sources */,
+				58B97220ED10A0AF143D84B9 /* AuthManager.swift in Sources */,
+				F3EB1DD40F7AFFCF4C5B2777 /* ContentView.swift in Sources */,
+				26ABC06FAEE9FB087F1BDB89 /* CourageArchiveView.swift in Sources */,
+				B47C67DB0D4A7B3165F3CB1A /* DailyFortuneView.swift in Sources */,
+				34DF3774B7BEA30A14B15DEB /* DeepLinkHandler.swift in Sources */,
+				5A970BBA8A6A826A5668DA44 /* DimensionPool.swift in Sources */,
+				9DF6852CE4E5FD941F292FD0 /* FortuneCardView.swift in Sources */,
+				070CB36F28AC410CAD915089 /* FortuneEngine.swift in Sources */,
+				E99308FCF29124C18190F8C3 /* CloudSyncManager.swift in Sources */,
+				950783254ACAD1CF421F9C54 /* HapticManager.swift in Sources */,
+				011EAEF6D8A447558A0C80C9 /* LLMService.swift in Sources */,
+				FDF40C1A2D801D341C3EFED2 /* MainContentView.swift in Sources */,
+				729A150EAE4793319564AD3F /* Models.swift in Sources */,
+				FCD863041C0D89139378D7E0 /* PaywallView.swift in Sources */,
+				36BDD8D8F92DF2F88738CC03 /* PosterService.swift in Sources */,
+				D2013CAC861204D478127A16 /* RespondView.swift in Sources */,
+				3BA6A176D46401B6391F0DAC /* ResultCardView.swift in Sources */,
+				9427E70309498CDBF08B3846 /* SettingsView.swift in Sources */,
+				40C45A8F462E8E3AC9F937A0 /* ShareCardView.swift in Sources */,
+				5BAAE8FFF3CED2A79F575701 /* SocialManager.swift in Sources */,
+				3CE9A566A3AE6631F3D59618 /* SubscriptionManager.swift in Sources */,
+				BB908440C5D4302DE92065C3 /* ZenChoiceApp.swift in Sources */,
+				AB2079B0A1A8FF695EFFDEC6 /* ZenDecisionEngine.swift in Sources */,
+				44E605D2A5FED1FC9464F0E0 /* ZenTheme.swift in Sources */,
+				FFBE6838C45240C8016826A5 /* ZenTypeCardView.swift in Sources */,
+				A1B2C3D4E5F60718091A2B3C /* ZenTypeAdvancedCardView.swift in Sources */,
+				231B9AFB2186A522314386B7 /* ZenTypeEngine.swift in Sources */,
+				9D49C9773F85F4082731B111 /* ZenTypeTestView.swift in Sources */,
+				CB1439633C68C20D8757FFC0 /* ZenTypeView.swift in Sources */,
+				E96580C581B78EABF709E19C /* ZenViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -248,7 +405,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = ZenChoice/ZenChoice.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 7N337R6J9M;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_PREVIEWS = YES;
@@ -270,7 +427,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.yinan.ZenChoice;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -294,7 +451,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = ZenChoice/ZenChoice.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 7N337R6J9M;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_PREVIEWS = YES;
@@ -316,7 +473,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.yinan.ZenChoice;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;

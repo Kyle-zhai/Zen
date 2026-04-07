@@ -5,106 +5,211 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>禅意 · 结缘见证</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&display=swap');
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #F5F6FA; color: #1E272E;
-            min-height: 100vh; display: flex; flex-direction: column;
-            align-items: center; padding: 20px;
+            font-family: 'Noto Serif SC', -apple-system, serif;
+            background: #1A1A2E;
+            color: #F5F0E8;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
         }
-        .container { max-width: 400px; width: 100%; }
-        .header { text-align: center; padding: 30px 0 20px; }
-        .header .icon { font-size: 48px; }
-        .header .wish { font-size: 22px; font-weight: 800; font-family: serif; margin: 8px 0; }
-        .header .sub { color: #888; font-size: 14px; }
-        .summary { background: #fff; border-radius: 10px; padding: 12px; margin: 12px 0; color: #666; font-size: 13px; line-height: 1.6; text-align: center; }
-        .section { margin: 16px 0; }
-        .section label { font-size: 12px; color: #888; display: block; margin-bottom: 8px; }
-        textarea, .name-input {
-            width: 100%; border: 1px solid #eee; border-radius: 10px;
-            padding: 12px; font-size: 15px; background: #fff;
-            font-family: inherit; resize: none;
+        /* Dark ink wash background */
+        body::before {
+            content: '';
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background:
+                radial-gradient(ellipse at 30% 15%, rgba(212,165,116,0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 70% 85%, rgba(196,69,54,0.04) 0%, transparent 40%),
+                linear-gradient(to bottom, #1A1A2E, #16213E);
+            z-index: -1;
+        }
+        /* Mountain silhouette */
+        body::after {
+            content: '';
+            position: fixed; bottom: 0; left: 0; right: 0;
+            height: 160px;
+            background: linear-gradient(to top, rgba(255,255,255,0.03), transparent);
+            clip-path: polygon(0% 100%, 0% 55%, 8% 40%, 20% 50%, 35% 25%, 50% 45%, 65% 20%, 80% 40%, 92% 30%, 100% 50%, 100% 100%);
+            z-index: -1;
+        }
+        .container { max-width: 400px; width: 100%; margin: 0 auto; padding: 20px; }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 40px 0 24px;
+        }
+        .header .seal-wrap {
+            width: 64px; height: 64px; margin: 0 auto 16px;
+            border: 1.5px solid rgba(196,69,54,0.4);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .header .seal-icon {
+            font-size: 24px;
+            color: rgba(196,69,54,0.7);
+        }
+        .header .sub {
+            font-size: 13px; color: rgba(245,240,232,0.4);
+            letter-spacing: 2px;
+        }
+        .header .title {
+            font-size: 11px; font-weight: 700;
+            color: #D4A574;
+            letter-spacing: 6px;
+            margin: 14px 0 0;
+            text-transform: uppercase;
+        }
+        .header .wish {
+            font-size: 22px; font-weight: 900;
+            margin: 14px 0 0;
+            color: #F5F0E8;
+            line-height: 1.5;
+        }
+
+        /* Divider */
+        .divider {
+            display: flex; align-items: center; justify-content: center;
+            gap: 8px; margin: 16px 0;
+        }
+        .divider span {
+            width: 24px; height: 1px; background: #D4A574; opacity: 0.3;
+        }
+        .divider .dot {
+            width: 4px; height: 4px; border-radius: 50%;
+            background: #D4A574; opacity: 0.5;
+        }
+
+        /* Sections */
+        .section { margin: 20px 0; }
+        .section label {
+            font-size: 11px; color: rgba(245,240,232,0.4);
+            display: block; margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+
+        .name-input, .custom-input, textarea {
+            width: 100%;
+            border: 1px solid rgba(212,165,116,0.15);
+            border-radius: 10px;
+            padding: 12px; font-size: 15px;
+            background: rgba(255,255,255,0.06);
+            font-family: inherit;
+            color: #F5F0E8;
+            resize: none;
+            backdrop-filter: blur(4px);
+            transition: border-color 0.3s;
+        }
+        .name-input::placeholder, .custom-input::placeholder, textarea::placeholder {
+            color: rgba(245,240,232,0.25);
+        }
+        .name-input:focus, .custom-input:focus, textarea:focus {
+            outline: none;
+            border-color: #D4A574;
         }
         textarea { min-height: 80px; }
-        .emoji-input {
-            width: 60px; height: 60px; font-size: 40px; text-align: center;
-            border: 1px solid #eee; border-radius: 12px; background: #fff;
-        }
-        .voice-section { display: flex; align-items: center; gap: 12px; }
-        .voice-btn {
-            border: none; background: #f0f0f0; border-radius: 8px;
-            padding: 8px 16px; font-size: 14px; cursor: pointer;
-        }
-        .voice-btn.recording { background: #ff4444; color: #fff; }
-        .toggle-row { display: flex; align-items: center; justify-content: space-between; }
+
         .submit-btn {
             width: 100%; padding: 14px; border: none; border-radius: 14px;
-            background: #1E272E; color: #fff; font-size: 16px; font-weight: 600;
-            cursor: pointer; margin-top: 20px;
+            background: linear-gradient(135deg, #D4A574, #C49A6C);
+            color: #1A1A2E;
+            font-size: 16px; font-weight: 700;
+            font-family: inherit;
+            cursor: pointer; margin-top: 24px;
+            letter-spacing: 2px;
+            transition: opacity 0.3s;
         }
-        .submit-btn:disabled { opacity: 0.5; }
+        .submit-btn:disabled { opacity: 0.3; }
+        .submit-btn:hover:not(:disabled) { opacity: 0.9; }
+
+        /* Success */
+        .success {
+            text-align: center; padding: 80px 20px;
+        }
+        .success .seal {
+            width: 72px; height: 72px; margin: 0 auto 20px;
+            border: 2px solid rgba(196,69,54,0.5); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 28px; color: rgba(196,69,54,0.7);
+        }
+        .success h2 {
+            font-size: 20px; color: #F5F0E8;
+            letter-spacing: 4px;
+        }
+        .success p { color: rgba(245,240,232,0.4); font-size: 13px; margin-top: 8px; }
+
+        /* Banner */
         .banner {
-            margin-top: 30px; padding: 16px; background: #fff; border-radius: 12px;
-            text-align: center; width: 100%;
+            margin-top: 40px; padding: 18px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 14px;
+            text-align: center;
+            border: 1px solid rgba(212,165,116,0.1);
         }
-        .banner a { color: #C9A000; text-decoration: none; font-weight: 600; }
-        .success { text-align: center; padding: 60px 0; }
-        .success .icon { font-size: 64px; }
+        .banner p { font-size: 12px; color: rgba(245,240,232,0.35); }
+        .banner a {
+            display: inline-block; margin-top: 8px;
+            color: #D4A574; text-decoration: none;
+            font-weight: 700; font-size: 13px;
+            letter-spacing: 1px;
+        }
+
         .hidden { display: none; }
-        .error { color: #ff4444; font-size: 13px; margin-top: 4px; }
+        .error { color: #C44536; font-size: 12px; margin-top: 6px; text-align: center; }
+
+        /* Hint text */
+        .hint {
+            font-size: 11px; color: rgba(245,240,232,0.25);
+            margin-top: 6px;
+        }
     </style>
 </head>
 <body>
     <div class="container" id="form-page">
         <div class="header">
-            <div class="icon">✍️</div>
+            <div class="seal-wrap"><div class="seal-icon">✍</div></div>
             <div class="sub">为 ta 见证这一刻</div>
+            <div class="title">· 决 定 见 证 ·</div>
             <div class="wish" id="wish-text">...</div>
         </div>
-        <div class="summary hidden" id="summary-text"></div>
+
+        <div class="divider"><span></span><div class="dot"></div><span></span></div>
 
         <div class="section">
-            <label>选一个印章</label>
-            <input class="emoji-input" id="emoji-stamp" placeholder="😊">
+            <label>· 你的名字 ·</label>
+            <input class="name-input" id="sender-name" placeholder="署名见证，让 ta 知道你在">
+            <div class="hint">见证需要署名，让这份支持更有力量</div>
         </div>
 
         <div class="section">
-            <label>写一句寄语</label>
-            <textarea id="content" placeholder="写点什么..."></textarea>
+            <label>· 你的身份视角 ·</label>
+            <input class="custom-input" id="custom-perspective" placeholder="如：大学室友、十年老友、暗恋对象...">
         </div>
 
         <div class="section">
-            <label>录一段语音（可选，15秒）</label>
-            <div class="voice-section">
-                <button class="voice-btn" id="voice-btn" onclick="toggleVoice()">🎙 录音</button>
-                <span id="voice-duration"></span>
-                <button class="voice-btn hidden" id="voice-delete" onclick="deleteVoice()">🗑</button>
-            </div>
+            <label>· 写一句寄语 ·</label>
+            <textarea id="content" placeholder="写下你的见证与祝福..."></textarea>
         </div>
 
-        <div class="section">
-            <div class="toggle-row">
-                <label>匿名</label>
-                <input type="checkbox" id="anonymous" checked>
-            </div>
-            <input class="name-input hidden" id="sender-name" placeholder="你的名字" style="margin-top: 8px;">
-        </div>
-
-        <button class="submit-btn" id="submit-btn" onclick="submit()" disabled>匿名见证</button>
+        <button class="submit-btn" id="submit-btn" onclick="submit()" disabled>署 名 见 证</button>
         <div class="error hidden" id="error-msg"></div>
     </div>
 
     <div class="container hidden" id="success-page">
         <div class="success">
-            <div class="icon">✅</div>
+            <div class="seal">✦</div>
             <h2>见证已送达</h2>
-            <p style="color: #888">你的祝福已经传递给朋友了</p>
+            <p>你的名字将刻入决定书</p>
         </div>
     </div>
 
-    <div class="banner">
-        <p>下载「禅意 ZenChoice」获得更多功能</p>
-        <a href="https://apps.apple.com/app/zenchoice/id000000000">前往 App Store →</a>
+    <div class="container">
+        <div class="banner">
+            <p>禅意 ZenChoice</p>
+            <a href="https://apps.apple.com/app/zenchoice/id000000000">下载 App →</a>
+        </div>
     </div>
 
 <script>
@@ -114,110 +219,45 @@ const SUPABASE_KEY = 'sb_publishable_GB0muX_x7meEZNv9VPtxaQ__HoXiYCn';
 const params = new URLSearchParams(window.location.search);
 const requestId = params.get('id');
 let requestData = null;
-let mediaRecorder = null;
-let audioChunks = [];
-let voiceBlob = null;
-let voiceDuration = 0;
-let voiceTimer = null;
 
 async function init() {
-    if (!requestId || !SUPABASE_URL) { document.body.innerHTML = '<p style="text-align:center;padding:40px">链接无效</p>'; return; }
+    if (!requestId || !SUPABASE_URL) { document.body.innerHTML = '<p style="text-align:center;padding:60px;font-family:serif;color:rgba(245,240,232,0.4)">链接无效</p>'; return; }
 
     const res = await fetch(`${SUPABASE_URL}/rest/v1/courage_requests?id=eq.${requestId}&select=*`, {
         headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
     });
     const rows = await res.json();
-    if (!rows.length) { document.body.innerHTML = '<p style="text-align:center;padding:40px">这段缘分已圆满</p>'; return; }
+    if (!rows.length) { document.body.innerHTML = '<p style="text-align:center;padding:60px;font-family:serif;color:rgba(245,240,232,0.4)">这段缘分已圆满</p>'; return; }
     requestData = rows[0];
 
     document.getElementById('wish-text').textContent = `「${requestData.wish}」`;
-    if (requestData.ai_summary) {
-        const el = document.getElementById('summary-text');
-        el.textContent = requestData.ai_summary;
-        el.classList.remove('hidden');
-    }
 
-    document.getElementById('anonymous').addEventListener('change', e => {
-        document.getElementById('sender-name').classList.toggle('hidden', e.target.checked);
-        updateSubmitLabel();
-    });
     document.getElementById('content').addEventListener('input', updateSubmitBtn);
-
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        document.getElementById('voice-btn').parentElement.parentElement.classList.add('hidden');
-    }
+    document.getElementById('sender-name').addEventListener('input', updateSubmitBtn);
 }
 
 function updateSubmitBtn() {
-    document.getElementById('submit-btn').disabled = !document.getElementById('content').value.trim();
-}
-
-function updateSubmitLabel() {
-    const anon = document.getElementById('anonymous').checked;
-    document.getElementById('submit-btn').textContent = anon ? '匿名见证' : '署名见证';
-}
-
-async function toggleVoice() {
-    const btn = document.getElementById('voice-btn');
-    if (mediaRecorder && mediaRecorder.state === 'recording') {
-        mediaRecorder.stop(); clearInterval(voiceTimer);
-        btn.textContent = '▶ 播放'; btn.classList.remove('recording');
-        document.getElementById('voice-delete').classList.remove('hidden');
-        return;
-    }
-    if (voiceBlob) { new Audio(URL.createObjectURL(voiceBlob)).play(); return; }
-    try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaRecorder = new MediaRecorder(stream);
-        audioChunks = []; voiceDuration = 0;
-        mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-        mediaRecorder.onstop = () => { voiceBlob = new Blob(audioChunks, { type: 'audio/webm' }); stream.getTracks().forEach(t => t.stop()); };
-        mediaRecorder.start();
-        btn.textContent = '⏹ 停止'; btn.classList.add('recording');
-        voiceTimer = setInterval(() => {
-            voiceDuration += 0.1;
-            document.getElementById('voice-duration').textContent = voiceDuration.toFixed(1) + 's';
-            if (voiceDuration >= 15) { mediaRecorder.stop(); clearInterval(voiceTimer); btn.textContent = '▶ 播放'; btn.classList.remove('recording'); }
-        }, 100);
-    } catch (e) { showError('无法访问麦克风'); }
-}
-
-function deleteVoice() {
-    voiceBlob = null; voiceDuration = 0;
-    document.getElementById('voice-btn').textContent = '🎙 录音';
-    document.getElementById('voice-duration').textContent = '';
-    document.getElementById('voice-delete').classList.add('hidden');
+    const hasContent = document.getElementById('content').value.trim();
+    const hasName = document.getElementById('sender-name').value.trim();
+    document.getElementById('submit-btn').disabled = !(hasContent && hasName);
 }
 
 async function submit() {
     const btn = document.getElementById('submit-btn');
-    btn.disabled = true; btn.textContent = '提交中...';
+    btn.disabled = true; btn.textContent = '见证中...';
 
     const content = document.getElementById('content').value.trim();
-    const emoji = document.getElementById('emoji-stamp').value.trim();
-    const anon = document.getElementById('anonymous').checked;
-    const name = anon ? null : document.getElementById('sender-name').value.trim();
+    const name = document.getElementById('sender-name').value.trim();
+    const perspective = document.getElementById('custom-perspective').value.trim();
     const deviceId = getDeviceId();
-
-    let voiceUrl = null;
-    if (voiceBlob) {
-        try {
-            const respId = crypto.randomUUID();
-            const path = `voices/${requestId}/${respId}.webm`;
-            await fetch(`${SUPABASE_URL}/storage/v1/object/voice-messages/${path}`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${SUPABASE_KEY}`, 'apikey': SUPABASE_KEY, 'Content-Type': 'audio/webm' },
-                body: voiceBlob
-            });
-            voiceUrl = `${SUPABASE_URL}/storage/v1/object/public/voice-messages/${path}`;
-        } catch (e) { /* continue without voice */ }
-    }
 
     try {
         const body = {
-            request_id: requestId, content, perspective: null,
-            emoji_stamp: emoji || null, voice_url: voiceUrl,
-            is_anonymous: anon, sender_name: name, sender_device_id: deviceId
+            request_id: requestId, content,
+            perspective: perspective || null,
+            emoji_stamp: null, voice_url: null,
+            is_anonymous: false, sender_name: name,
+            sender_device_id: deviceId
         };
         const res = await fetch(`${SUPABASE_URL}/rest/v1/courage_responses`, {
             method: 'POST',
@@ -232,9 +272,9 @@ async function submit() {
             if (err.includes('unique')) showError('你已见证过了');
             else if (err.includes('response_count')) showError('见证人数已满');
             else showError('提交失败，请重试');
-            btn.disabled = false; updateSubmitLabel();
+            btn.disabled = false; btn.textContent = '署 名 见 证';
         }
-    } catch (e) { showError('网络错误'); btn.disabled = false; updateSubmitLabel(); }
+    } catch (e) { showError('网络错误'); btn.disabled = false; btn.textContent = '署 名 见 证'; }
 }
 
 function showError(msg) {

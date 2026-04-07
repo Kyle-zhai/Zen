@@ -66,6 +66,30 @@ enum EncouragementEngine {
             s.removeLast()
         }
 
+        // Phase 0: Strip hesitation/uncertainty wrappers
+        // e.g. "我在犹豫要不要辞职" → "辞职", "我不知道该不该跟他道歉" → "跟他道歉"
+        let hesitationPrefixes: [String] = [
+            "我在犹豫要不要去", "我在犹豫要不要", "我在犹豫该不该去", "我在犹豫该不该",
+            "我在犹豫能不能", "我在犹豫是不是该", "我在犹豫",
+            "我犹豫要不要去", "我犹豫要不要", "我犹豫该不该去", "我犹豫该不该", "我犹豫",
+            "在犹豫要不要去", "在犹豫要不要", "在犹豫该不该", "在犹豫",
+            "犹豫要不要去", "犹豫要不要", "犹豫该不该", "犹豫",
+            "我不知道该不该去", "我不知道该不该", "我不知道要不要去", "我不知道要不要",
+            "我不知道能不能", "我不知道是不是该", "我不知道",
+            "不知道该不该", "不知道要不要", "不知道",
+            "我纠结要不要去", "我纠结要不要", "我纠结该不该", "我纠结",
+            "纠结要不要", "纠结该不该", "纠结",
+            "我拿不定主意要不要", "我拿不定主意",
+            "拿不定主意要不要", "拿不定主意",
+            "我很矛盾要不要", "我很矛盾",
+        ]
+        for prefix in hesitationPrefixes {
+            if s.hasPrefix(prefix) && s.count > prefix.count {
+                s = String(s.dropFirst(prefix.count))
+                break
+            }
+        }
+
         // Phase 1: Strip leading time expressions so "今天我想表白" and
         // "明天我想辞职" both reduce to "我想X" before prefix matching.
         let timeWords = [
@@ -154,6 +178,35 @@ enum EncouragementEngine {
         let lower = s.lowercased()
 
         let prefixes: [(pattern: String, keepRest: Bool)] = [
+            // Hesitation / uncertainty
+            ("i'm hesitating about whether to ", true),
+            ("i'm hesitating about whether i should ", true),
+            ("i'm hesitating about ", true),
+            ("i'm hesitating whether to ", true),
+            ("i'm hesitating to ", true),
+            ("i hesitate to ", true),
+            ("hesitating about whether to ", true),
+            ("hesitating about ", true),
+            ("hesitating whether to ", true),
+            ("i don't know if i should ", true),
+            ("i don't know whether to ", true),
+            ("i don't know whether i should ", true),
+            ("don't know if i should ", true),
+            ("don't know whether to ", true),
+            ("i'm not sure if i should ", true),
+            ("i'm not sure whether to ", true),
+            ("i'm not sure about ", true),
+            ("not sure if i should ", true),
+            ("not sure whether to ", true),
+            ("i can't decide if i should ", true),
+            ("i can't decide whether to ", true),
+            ("can't decide if i should ", true),
+            ("can't decide whether to ", true),
+            ("i'm torn about whether to ", true),
+            ("i'm torn about ", true),
+            ("unsure if i should ", true),
+            ("unsure whether to ", true),
+            // Intent / modal
             ("should i go ", true),
             ("should i try to ", true),
             ("should i try ", true),

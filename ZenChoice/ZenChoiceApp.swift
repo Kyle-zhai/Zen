@@ -4,6 +4,10 @@ import SwiftUI
 struct ZenChoiceApp: App {
     @State private var viewModel = ZenViewModel()
 
+    init() {
+        CloudSyncManager.shared.start()
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView()

@@ -5,8 +5,8 @@ import Foundation
 class SocialManager {
 
     // MARK: - Config (fill in after creating Supabase project)
-    private let supabaseUrl = ""  // fill in your Supabase project URL
-    private let supabaseAnonKey = ""  // fill in your Supabase anon key
+    private let supabaseUrl = Secrets.supabaseUrl
+    private let supabaseAnonKey = Secrets.supabaseAnonKey
 
     // MARK: - Auth Reference
 
@@ -42,6 +42,11 @@ class SocialManager {
         }
     }
 
+    // MARK: - Friend Request State
+
+    var incomingRequests: [FriendRequest] = []
+    var incomingRequestProfiles: [String: UserProfile] = [:]  // fromUserId -> profile
+
     // MARK: - Anonymous Encouragement State
 
     var pendingEncouragements: [AnonymousEncouragement] = []
@@ -51,13 +56,13 @@ class SocialManager {
     func createRequest(type: CourageRequest.RequestType, wish: String, aiSummary: String?, maxResponses: Int) async throws -> CourageRequest {
         guard let userId else { throw SocialError.notConfigured }
 
-        let body: [String: Any] = [
+        var body: [String: Any] = [
             "type": type.rawValue,
             "wish": wish,
-            "ai_summary": aiSummary as Any,
             "creator_user_id": userId,
             "max_responses": maxResponses
         ]
+        if let aiSummary { body["ai_summary"] = aiSummary }
 
         let data = try await postJSON(path: "/rest/v1/courage_requests", body: body, returnRows: true)
 
@@ -75,16 +80,16 @@ class SocialManager {
     func submitResponse(requestId: UUID, content: String, perspective: String?, emojiStamp: String?, voiceUrl: String?, isAnonymous: Bool, senderName: String?) async throws {
         guard let userId else { throw SocialError.notConfigured }
 
-        let body: [String: Any] = [
+        var body: [String: Any] = [
             "request_id": requestId.uuidString,
             "content": content,
-            "perspective": perspective as Any,
-            "emoji_stamp": emojiStamp as Any,
-            "voice_url": voiceUrl as Any,
             "is_anonymous": isAnonymous,
-            "sender_name": senderName as Any,
             "sender_user_id": userId
         ]
+        if let perspective { body["perspective"] = perspective }
+        if let emojiStamp { body["emoji_stamp"] = emojiStamp }
+        if let voiceUrl { body["voice_url"] = voiceUrl }
+        if let senderName { body["sender_name"] = senderName }
 
         _ = try await postJSON(path: "/rest/v1/courage_responses", body: body, returnRows: false)
     }
@@ -195,10 +200,71 @@ class SocialManager {
         return rows.first
     }
 
+    /// Search for a user by account ID or email
+    func searchUser(query: String) async throws -> UserProfile? {
+        // Try account_id first
+        let byId = try await getJSON(path: "/rest/v1/profiles?account_id=eq.\(query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? query)&select=*")
+        if let rows = try? JSONDecoder().decode([UserProfile].self, from: byId), let found = rows.first {
+            return found
+        }
+
+        // Try by email — query auth.users is not possible via REST, so search profiles only
+        // If query looks like email, try matching (profiles don't store email, so this won't work for email-only search)
+        // For now, only account_id search is supported
+        return nil
+    }
+
     /// Generate a bond invite link containing the current user's ID.
     func bondInviteLink() -> URL? {
         guard let userId else { return nil }
         return URL(string: "https://kyle-zhai.github.io/Zen/bond.html?from=\(userId)")
+    }
+
+    // MARK: - Friend Requests
+
+    func sendFriendRequest(toUserId: String) async throws {
+        guard let userId else { throw SocialError.notConfigured }
+
+        let body: [String: Any] = [
+            "from_user_id": userId,
+            "to_user_id": toUserId,
+            "status": "pending"
+        ]
+
+        _ = try await postJSON(path: "/rest/v1/friend_requests", body: body, returnRows: false)
+    }
+
+    func fetchIncomingRequests() async throws {
+        guard let userId else { return }
+
+        let data = try await getJSON(path: "/rest/v1/friend_requests?to_user_id=eq.\(userId)&status=eq.pending&select=*&order=created_at.desc")
+
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        incomingRequests = try decoder.decode([FriendRequest].self, from: data)
+
+        for req in incomingRequests where incomingRequestProfiles[req.fromUserId] == nil {
+            if let profile = try? await fetchProfile(userId: req.fromUserId) {
+                incomingRequestProfiles[req.fromUserId] = profile
+            }
+        }
+    }
+
+    func acceptFriendRequest(_ request: FriendRequest) async throws {
+        try await patchJSON(path: "/rest/v1/friend_requests?id=eq.\(request.id.uuidString)", body: [
+            "status": "accepted"
+        ])
+
+        try await createBond(friendUserId: request.fromUserId)
+        incomingRequests.removeAll { $0.id == request.id }
+    }
+
+    func rejectFriendRequest(_ request: FriendRequest) async throws {
+        try await patchJSON(path: "/rest/v1/friend_requests?id=eq.\(request.id.uuidString)", body: [
+            "status": "rejected"
+        ])
+
+        incomingRequests.removeAll { $0.id == request.id }
     }
 
     // MARK: - Anonymous Encouragement
@@ -286,7 +352,8 @@ class SocialManager {
         let url = URL(string: "\(supabaseUrl)\(path)")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        for (key, value) in authHeaders {
+        let headers = authHeaders
+        for (key, value) in headers {
             request.setValue(value, forHTTPHeaderField: key)
         }
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -296,10 +363,37 @@ class SocialManager {
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
         request.timeoutInterval = 15
 
-        let (data, response) = try await URLSession.shared.data(for: request)
-        guard let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode) else {
+        #if DEBUG
+        print("[SocialManager] POST \(path)")
+        print("[SocialManager] Body: \(body)")
+        print("[SocialManager] Has auth token: \(headers["Authorization"] != nil)")
+        #endif
+
+        var (data, response) = try await URLSession.shared.data(for: request)
+        var statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
+
+        // Auto-retry once on 401 after refreshing token
+        if statusCode == 401, let auth = authManager {
+            #if DEBUG
+            print("[SocialManager] 401 received, attempting token refresh...")
+            #endif
+            await auth.refreshSessionIfNeeded()
+
+            // Rebuild request with fresh headers
+            let freshHeaders = authHeaders
+            for (key, value) in freshHeaders {
+                request.setValue(value, forHTTPHeaderField: key)
+            }
+            (data, response) = try await URLSession.shared.data(for: request)
+            statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
+        }
+
+        guard (200...299).contains(statusCode) else {
             let errorBody = String(data: data, encoding: .utf8) ?? "unknown"
-            throw SocialError.networkError("POST failed: \(errorBody)")
+            #if DEBUG
+            print("[SocialManager] POST FAILED [\(statusCode)]: \(errorBody)")
+            #endif
+            throw SocialError.networkError("[\(statusCode)] \(errorBody)")
         }
         return data
     }

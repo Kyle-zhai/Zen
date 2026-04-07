@@ -15,7 +15,10 @@ class SubscriptionManager {
         switch activeProductId {
         case Self.yearlyProductId: return .yearly
         case Self.monthlyProductId: return .monthly
-        default: return .free
+        default:
+            // Invite code free Pro counts as monthly-equivalent
+            if InviteCodeManager.shared.hasFreePro { return .monthly }
+            return .free
         }
     }
 

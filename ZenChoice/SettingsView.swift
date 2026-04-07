@@ -7,6 +7,7 @@ struct SettingsView: View {
     @Environment(\.openURL) private var openURL
     @State private var localShowPaywall = false
     @State private var showManageSubscriptions = false
+    @State private var showInviteCode = false
 
     private var cn: Bool { viewModel.L.isChinese }
 
@@ -15,6 +16,7 @@ struct SettingsView: View {
 
         NavigationStack {
             Form {
+                // MARK: - Language
                 Section(cn ? "语言" : "Language") {
                     Picker(cn ? "显示语言" : "Display Language", selection: $vm.appLanguage) {
                         ForEach(AppLanguage.allCases, id: \.self) { lang in
@@ -23,12 +25,45 @@ struct SettingsView: View {
                     }
                 }
 
+                // MARK: - Invite Code
+                Section(cn ? "邀请好友" : "Invite Friends") {
+                    Button {
+                        showInviteCode = true
+                    } label: {
+                        HStack {
+                            Label {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(cn ? "邀请码" : "Invite Code")
+                                    if let code = InviteCodeManager.shared.myCode {
+                                        Text(code)
+                                            .font(.system(size: 11, design: .monospaced))
+                                            .foregroundStyle(ZenTheme.gooseYellow)
+                                    }
+                                }
+                            } icon: {
+                                Image(systemName: "ticket")
+                            }
+                            Spacer()
+                            if InviteCodeManager.shared.hasFreePro,
+                               let remaining = InviteCodeManager.shared.freeProRemainingText {
+                                Text("Pro \(remaining)")
+                                    .font(ZenTheme.caption(11))
+                                    .foregroundStyle(ZenTheme.gooseYellow)
+                            }
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+
+                // MARK: - Subscription
                 Section(cn ? "订阅" : "Subscription") {
                     HStack {
                         Label(cn ? "订阅状态" : "Status", systemImage: "sparkle")
                         Spacer()
                         Text(subscriptionLabel)
-                            .foregroundStyle(viewModel.isSubscribed ? .green : .secondary)
+                            .foregroundStyle(viewModel.isSubscribed ? ZenTheme.gooseYellow : .secondary)
                     }
 
                     HStack {
@@ -55,7 +90,6 @@ struct SettingsView: View {
                         }
                     }
 
-                    // Expiration date
                     if viewModel.isSubscribed, let exp = viewModel.subscriptionManager.expirationDate {
                         HStack {
                             Text(cn ? "到期时间" : "Expires")
@@ -86,8 +120,14 @@ struct SettingsView: View {
                             perspectiveRow(index: index)
                         }
                     }
+                } else if viewModel.hasShareReward {
+                    Section(header: Text(cn ? "我的专属视角（分享奖励 · 1个）" : "My Custom Perspective (share reward · 1)"),
+                            footer: Text(cn ? "每天首次分享成果图可免费使用一个自定义视角，24小时内有效" : "First daily share unlocks one free custom perspective for 24 hours")) {
+                        perspectiveRow(index: 0)
+                    }
                 }
 
+                // MARK: - Disclaimer
                 Section(cn ? "免责声明" : "Disclaimer") {
                     VStack(alignment: .leading, spacing: 8) {
                         Label(cn ? "娱乐性质说明" : "Entertainment Disclaimer", systemImage: "info.circle")
@@ -134,13 +174,8 @@ struct SettingsView: View {
                     }
                 }
 
-                Section(cn ? "账号" : "Account") {
-                    if let profile = viewModel.authManager.profile {
-                        LabeledContent(cn ? "昵称" : "Nickname") {
-                            Text(profile.nickname)
-                        }
-                    }
-
+                // MARK: - Sign Out
+                Section {
                     Button(role: .destructive) {
                         viewModel.authManager.signOut()
                         dismiss()
@@ -174,11 +209,18 @@ struct SettingsView: View {
             }) {
                 PaywallView().environment(viewModel)
             }
+            .sheet(isPresented: $showInviteCode, onDismiss: {
+                viewModel.syncSubscriptionStatus()
+            }) {
+                InviteCodeView().environment(viewModel)
+            }
             #if os(iOS)
             .manageSubscriptionsSheet(isPresented: $showManageSubscriptions)
             #endif
         }
     }
+
+    // MARK: - Perspectives
 
     private let emojiOptions = ["✨", "🔥", "💎", "🌈", "⚡", "🎭", "👑", "🦄", "🌸", "🎯"]
 
@@ -193,7 +235,6 @@ struct SettingsView: View {
                 .foregroundStyle(.secondary)
 
             HStack(spacing: 8) {
-                // Emoji picker
                 Menu {
                     ForEach(emojiOptions, id: \.self) { e in
                         Button(e) { vm.customPerspectives[index].emoji = e }
@@ -202,7 +243,7 @@ struct SettingsView: View {
                     Text(vm.customPerspectives[index].emoji)
                         .font(.title2)
                         .frame(width: 36, height: 36)
-                        .background(Color(.systemGray6))
+                        .background(ZenTheme.gooseYellow.opacity(0.08))
                         .clipShape(RoundedRectangle(cornerRadius: 8))
                 }
 

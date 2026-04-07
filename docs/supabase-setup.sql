@@ -7,6 +7,7 @@
 CREATE TABLE profiles (
     id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     nickname text NOT NULL,
+    account_id text UNIQUE,
     avatar_url text,
     created_at timestamptz DEFAULT now()
 );
@@ -61,13 +62,26 @@ CREATE TABLE anonymous_encouragements (
     created_at timestamptz DEFAULT now()
 );
 
--- 6. Indexes
+-- 6. Friend Requests
+CREATE TABLE friend_requests (
+    id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+    from_user_id uuid NOT NULL REFERENCES auth.users(id),
+    to_user_id uuid NOT NULL REFERENCES auth.users(id),
+    status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'accepted', 'rejected')),
+    created_at timestamptz DEFAULT now(),
+    UNIQUE(from_user_id, to_user_id)
+);
+
+-- 7. Indexes
+CREATE INDEX idx_profiles_account_id ON profiles(account_id);
 CREATE INDEX idx_requests_creator ON courage_requests(creator_user_id);
 CREATE INDEX idx_requests_created ON courage_requests(created_at DESC);
 CREATE INDEX idx_responses_request ON courage_responses(request_id);
 CREATE INDEX idx_bonds_user_a ON bonds(user_a);
 CREATE INDEX idx_bonds_user_b ON bonds(user_b);
 CREATE INDEX idx_anon_receiver ON anonymous_encouragements(receiver_user_id, is_revealed);
+CREATE INDEX idx_friend_requests_to ON friend_requests(to_user_id, status);
+CREATE INDEX idx_friend_requests_from ON friend_requests(from_user_id);
 
 -- 7. Auto-increment response_count trigger
 CREATE OR REPLACE FUNCTION increment_response_count()
@@ -101,6 +115,7 @@ ALTER TABLE courage_requests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE courage_responses ENABLE ROW LEVEL SECURITY;
 ALTER TABLE bonds ENABLE ROW LEVEL SECURITY;
 ALTER TABLE anonymous_encouragements ENABLE ROW LEVEL SECURITY;
+ALTER TABLE friend_requests ENABLE ROW LEVEL SECURITY;
 
 -- 10. RLS Policies
 
@@ -136,7 +151,15 @@ CREATE POLICY "anon_read" ON anonymous_encouragements
 CREATE POLICY "anon_update" ON anonymous_encouragements
     FOR UPDATE USING (auth.uid() = receiver_user_id);
 
--- 11. Create storage bucket (run via Supabase Dashboard > Storage > New Bucket)
+-- Friend Requests: sender can insert, receiver can read/update
+CREATE POLICY "friend_req_insert" ON friend_requests
+    FOR INSERT WITH CHECK (auth.uid() = from_user_id);
+CREATE POLICY "friend_req_read" ON friend_requests
+    FOR SELECT USING (auth.uid() = from_user_id OR auth.uid() = to_user_id);
+CREATE POLICY "friend_req_update" ON friend_requests
+    FOR UPDATE USING (auth.uid() = to_user_id);
+
+-- 12. Create storage bucket (run via Supabase Dashboard > Storage > New Bucket)
 -- Name: voice-messages
 -- Public: true
 -- File size limit: 100KB

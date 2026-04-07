@@ -5,6 +5,8 @@ struct MainContentView: View {
 
     private var cn: Bool { viewModel.L.isChinese }
 
+    @Namespace private var tabNS
+
     var body: some View {
         @Bindable var vm = viewModel
 
@@ -12,36 +14,26 @@ struct MainContentView: View {
             ZenBackground()
 
             VStack(spacing: 0) {
-                ScrollViewReader { proxy in
-                    ScrollView(showsIndicators: false) {
-                        VStack(spacing: 32) {
-                            headerBar
+                headerBar
+                tabSelector
 
-                            inputArea(wish: $vm.wish)
-
-                            if vm.showInkAnimation {
-                                InkAnimationView(isChinese: cn)
-                            }
-
-                            if vm.showResult, let result = vm.currentResult {
-                                resultSection(result)
-                                    .id("result")
-                            }
-
-                            Spacer().frame(height: 80)
-                        }
-                        .padding(.horizontal, 20)
-                    }
-                    #if os(iOS)
-                    .scrollDismissesKeyboard(.interactively)
-                    #endif
-                    .onChange(of: vm.showResult) { _, show in
-                        guard show else { return }
-                        withAnimation(.easeOut(duration: 0.5)) {
-                            proxy.scrollTo("result", anchor: .top)
-                        }
+                // Tab content with crossfade
+                Group {
+                    switch viewModel.selectedTab {
+                    case .fortune:
+                        DailyFortuneView(fortuneEngine: viewModel.fortuneEngine)
+                            .environment(viewModel)
+                            .id(AppTab.fortune)
+                    case .encourage:
+                        encourageContent
+                            .id(AppTab.encourage)
+                    case .zenType:
+                        ZenTypeView(engine: viewModel.zenTypeEngine)
+                            .environment(viewModel)
+                            .id(AppTab.zenType)
                     }
                 }
+                .animation(.easeInOut(duration: 0.25), value: viewModel.selectedTab)
             }
         }
         .task { await viewModel.initialize() }
@@ -56,30 +48,6 @@ struct MainContentView: View {
         .sheet(isPresented: $vm.showArchive) {
             CourageArchiveView().environment(viewModel)
         }
-        .sheet(isPresented: $vm.showInbox) {
-            InboxView().environment(viewModel)
-        }
-        .sheet(isPresented: $vm.showEncourageRequest) {
-            if let result = vm.currentResult {
-                EncourageRequestView(
-                    wish: result.wish,
-                    socialManager: viewModel.socialManager,
-                    isChinese: cn,
-                    isSubscribed: viewModel.isSubscribed
-                )
-            }
-        }
-        .sheet(isPresented: $vm.showWitnessRequest) {
-            if let result = vm.currentResult {
-                WitnessRequestView(
-                    wish: result.wish,
-                    aiSummary: viewModel.generateAISummary(),
-                    socialManager: viewModel.socialManager,
-                    isChinese: cn,
-                    maxSignatures: viewModel.isSubscribed ? 3 : 1
-                )
-            }
-        }
         .sheet(isPresented: $vm.showRespondSheet) {
             if let request = vm.deepLinkRequest {
                 RespondView(
@@ -87,14 +55,6 @@ struct MainContentView: View {
                     socialManager: viewModel.socialManager,
                     isChinese: cn
                 )
-            }
-        }
-        .sheet(isPresented: $vm.showBonds) {
-            BondView().environment(viewModel)
-        }
-        .sheet(isPresented: $vm.showGuess) {
-            if let anon = vm.pendingAnonymousEncouragement {
-                GuessView(encouragement: anon).environment(viewModel)
             }
         }
         #if os(iOS)
@@ -114,116 +74,164 @@ struct MainContentView: View {
     // MARK: - Header
 
     private var headerBar: some View {
-        ZStack {
-            // Title — absolute center, unaffected by icons
-            VStack(spacing: 2) {
-                Text(cn ? "禅意" : "ZenChoice")
-                    .font(ZenTheme.calligraphy(28))
-                    .foregroundStyle(ZenTheme.inkBlack)
-                Text(cn ? "勇敢去做想做的事" : "ZENCHOICE")
-                    .font(ZenTheme.caption(10))
-                    .foregroundStyle(ZenTheme.distantMountain.opacity(0.5))
-                    .tracking(cn ? 2 : 4)
-            }
+        VStack(spacing: 0) {
+            ZStack {
+                // Brand — pixel terminal style
+                HStack(spacing: 6) {
+                    Image("AppLogo")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 24, height: 24)
+                        .clipShape(RoundedRectangle(cornerRadius: 2))
 
-            // Icons on sides
-            HStack {
-                HStack(spacing: 14) {
-                    Button { viewModel.showArchive = true } label: {
-                        Image(systemName: "book.closed")
-                            .font(.title3)
-                            .foregroundStyle(ZenTheme.distantMountain.opacity(0.6))
-                    }
-
-                    Button { viewModel.showInbox = true } label: {
-                        ZStack(alignment: .topTrailing) {
-                            Image(systemName: "tray")
-                                .font(.title3)
-                                .foregroundStyle(ZenTheme.distantMountain.opacity(0.6))
-                            if viewModel.socialManager.unreadCount > 0 {
-                                Text("\(viewModel.socialManager.unreadCount)")
-                                    .font(.system(size: 9, weight: .bold))
-                                    .foregroundStyle(.white)
-                                    .padding(3)
-                                    .background(Circle().fill(.red))
-                                    .offset(x: 6, y: -6)
-                            }
-                        }
-                    }
+                    Text(cn ? "禅意" : "ZenChoice")
+                        .font(.system(size: 20, weight: .bold, design: .monospaced))
+                        .foregroundStyle(ZenTheme.ricePaper)
                 }
 
-                Spacer()
+                // Side icons
+                HStack {
+                    headerIcon("book.closed") { viewModel.showArchive = true }
+                    Spacer()
+                    headerIcon("gearshape") { viewModel.showSettings = true }
+                }
+            }
+            .padding(.horizontal, 24)
+            .padding(.top, 6)
+            .padding(.bottom, 4)
+        }
+    }
 
-                HStack(spacing: 14) {
-                    Button { viewModel.showBonds = true } label: {
-                        Image(systemName: "person.2")
-                            .font(.title3)
-                            .foregroundStyle(ZenTheme.distantMountain.opacity(0.6))
+    private func headerIcon(_ name: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: name)
+                .font(.system(size: 14, weight: .light))
+                .foregroundStyle(ZenTheme.mist.opacity(0.4))
+        }
+    }
+
+    // MARK: - Tab Selector
+
+    private var tabSelector: some View {
+        HStack(spacing: 0) {
+            tabButton(.fortune, label: cn ? "禅签" : "Oracle")
+            tabButton(.encourage, label: cn ? "问禅" : "Ask Zen")
+            tabButton(.zenType, label: cn ? "命星" : "Star")
+        }
+        .padding(.horizontal, 32)
+        .padding(.top, 2)
+        .padding(.bottom, 6)
+    }
+
+    private func tabButton(_ tab: AppTab, label: String) -> some View {
+        let selected = viewModel.selectedTab == tab
+        return Button {
+            withAnimation(.easeInOut(duration: 0.15)) {
+                viewModel.selectedTab = tab
+            }
+            HapticManager.selection()
+        } label: {
+            VStack(spacing: 5) {
+                Text(label)
+                    .font(.system(size: 12, weight: selected ? .bold : .regular, design: .monospaced))
+                    .foregroundStyle(selected ? ZenTheme.gooseYellow : ZenTheme.mist.opacity(0.35))
+
+                ZStack {
+                    Rectangle().fill(.clear).frame(width: 20, height: 2)
+
+                    if selected {
+                        Rectangle()
+                            .fill(ZenTheme.gooseYellow)
+                            .frame(width: 20, height: 2)
+                            .matchedGeometryEffect(id: "tabLine", in: tabNS)
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 6)
+        }
+    }
+
+    // MARK: - Encourage Content
+
+    private var encourageContent: some View {
+        @Bindable var vm = viewModel
+
+        return ScrollViewReader { proxy in
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 32) {
+                    inputArea(wish: $vm.wish)
+
+                    if vm.showInkAnimation {
+                        InkAnimationView(isChinese: cn)
                     }
 
-                    Button { viewModel.showSettings = true } label: {
-                        Image(systemName: "gearshape")
-                            .font(.title3)
-                            .foregroundStyle(ZenTheme.distantMountain.opacity(0.6))
+                    if vm.showResult, let result = vm.currentResult {
+                        resultSection(result)
+                            .id("result")
                     }
+
+                    Spacer().frame(height: 80)
+                }
+                .padding(.horizontal, 20)
+            }
+            #if os(iOS)
+            .scrollDismissesKeyboard(.interactively)
+            #endif
+            .onChange(of: vm.showResult) { _, show in
+                guard show else { return }
+                withAnimation(.easeOut(duration: 0.5)) {
+                    proxy.scrollTo("result", anchor: .top)
                 }
             }
         }
-        .padding(.horizontal, 20)
-        .padding(.top, 8)
     }
 
     // MARK: - Input Area
 
     @ViewBuilder
     private func inputArea(wish: Binding<String>) -> some View {
-        VStack(spacing: 20) {
-            HStack(spacing: 8) {
-                dot
-                Text(cn ? "想做却犹豫的事，交给我来选择" : "Tell me what you hesitate to do — I'll decide for you")
-                    .font(ZenTheme.caption(cn ? 12 : 10))
-                    .foregroundStyle(ZenTheme.distantMountain.opacity(0.4))
-                    .tracking(cn ? 6 : 1)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.8)
-                dot
-            }
-            .padding(.bottom, 8)
+        VStack(spacing: 0) {
+            Text(cn ? "心中所惑之事" : "What weighs on your mind")
+                .font(.system(size: 12, weight: .regular, design: .monospaced))
+                .foregroundStyle(ZenTheme.mist.opacity(0.3))
+                .padding(.bottom, 18)
 
-            VStack(spacing: 8) {
-                TextField(cn ? "今天想做什么…" : "What do you want to do today…", text: wish, axis: .vertical)
-                    .font(ZenTheme.bodyFont(17))
-                    .foregroundStyle(ZenTheme.distantMountain)
-                    .multilineTextAlignment(.center)
-                    .lineLimit(1...3)
-                    .tint(ZenTheme.gooseYellow)
-                    .onChange(of: wish.wrappedValue) { _, newValue in
-                        if newValue.count > 50 {
-                            wish.wrappedValue = String(newValue.prefix(50))
-                        }
+            // Input card
+            TextField(cn ? "辞职、表白、出去跑步…" : "quit my job, ask them out…", text: wish, axis: .vertical)
+                .font(.system(size: 15, weight: .regular, design: .monospaced))
+                .foregroundStyle(ZenTheme.ricePaper.opacity(0.85))
+                .multilineTextAlignment(.leading)
+                .lineLimit(1...4)
+                .tint(ZenTheme.gooseYellow)
+                .onChange(of: wish.wrappedValue) { _, newValue in
+                    if newValue.count > 50 {
+                        wish.wrappedValue = String(newValue.prefix(50))
                     }
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
+                .zenCard(elevated: true)
 
-                DottedLine()
-                    .stroke(style: StrokeStyle(lineWidth: 1, dash: [4, 4]))
-                    .foregroundStyle(ZenTheme.distantMountain.opacity(0.2))
-                    .frame(height: 1)
-            }
-            .padding(.horizontal, 20)
+            Spacer().frame(height: 26)
 
             goButton
 
-            // Daily usage indicator
+            Spacer().frame(height: 10)
+
             Text(cn
-                 ? "今日剩余 \(viewModel.remainingUsage)/\(viewModel.dailyLimit) 次"
-                 : "\(viewModel.remainingUsage)/\(viewModel.dailyLimit) uses left today")
-                .font(ZenTheme.caption(11))
+                 ? "今日 \(viewModel.remainingUsage)/\(viewModel.dailyLimit)"
+                 : "\(viewModel.remainingUsage)/\(viewModel.dailyLimit) today")
+                .font(.system(size: 10, weight: .light, design: .monospaced))
                 .foregroundStyle(viewModel.remainingUsage > 0
-                                 ? ZenTheme.distantMountain.opacity(0.4)
-                                 : Color.red.opacity(0.6))
+                                 ? ZenTheme.mist.opacity(0.25)
+                                 : ZenTheme.cinnabar.opacity(0.5))
         }
     }
 
     // MARK: - Go Button
+
+    @State private var buttonPressed = false
 
     private var goButton: some View {
         Button {
@@ -232,112 +240,71 @@ struct MainContentView: View {
             #endif
             Task { await viewModel.generateEncouragement() }
         } label: {
-            HStack(spacing: 8) {
+            Group {
                 if viewModel.isLoading {
-                    ProgressView().tint(ZenTheme.gooseYellow)
+                    ProgressView().tint(ZenTheme.inkBlack)
                 } else {
-                    Image(systemName: "sparkles")
-                    Text(cn ? "获知真相" : "Reveal the Truth")
+                    Text(cn ? "禅意初现" : "ZEN REVEALS")
                 }
             }
-            .font(ZenTheme.calligraphy(18))
-            .foregroundStyle(ZenTheme.gooseYellow)
-            .padding(.horizontal, 44)
+            .font(.system(size: 15, weight: .bold, design: .monospaced))
+            .foregroundStyle(ZenTheme.inkBlack)
+            .tracking(1)
+            .frame(width: 200)
             .padding(.vertical, 14)
             .background(
-                RoundedRectangle(cornerRadius: 14)
-                    .fill(ZenTheme.inkBlack)
-                    .shadow(color: ZenTheme.inkBlack.opacity(0.3), radius: 12, y: 6)
+                RoundedRectangle(cornerRadius: 6)
+                    .fill(ZenTheme.gooseYellow)
             )
         }
         .disabled(viewModel.isLoading || viewModel.wish.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-        .padding(.top, 8)
+        .opacity(viewModel.wish.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? 0.5 : 1.0)
+        .scaleEffect(buttonPressed ? 0.96 : 1.0)
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { _ in withAnimation(.easeOut(duration: 0.06)) { buttonPressed = true } }
+                .onEnded { _ in withAnimation(.spring(response: 0.25, dampingFraction: 0.6)) { buttonPressed = false } }
+        )
     }
 
     // MARK: - Result Section
 
     private func resultSection(_ result: EncouragementResult) -> some View {
-        VStack(spacing: 20) {
-            Text("「\(result.wish)」")
-                .font(ZenTheme.bodyFont(15))
-                .foregroundStyle(ZenTheme.inkBlack)
-                .padding(.top, 8)
-
-            dividerDecoration
+        VStack(spacing: 22) {
+            // Wish
+            Text(result.wish)
+                .font(.system(size: 15, weight: .medium, design: .monospaced))
+                .foregroundStyle(ZenTheme.ricePaper.opacity(0.7))
+                .padding(.top, 10)
 
             ForEach(Array(result.dimensions.enumerated()), id: \.element.id) { index, dim in
-                VStack(spacing: 8) {
-                    ResultCardView(
-                        dimensionResult: dim,
-                        delay: Double(index) * 0.12,
-                        onShare: { viewModel.generateShareCard(dimensionResult: dim) }
-                    )
-
-                    // "Guess who" button for anonymous friend dimension
-                    if dim.dimensionId == "anonymous_friend", viewModel.pendingAnonymousEncouragement != nil {
-                        Button {
-                            viewModel.showGuess = true
-                        } label: {
-                            HStack(spacing: 6) {
-                                Image(systemName: "person.fill.questionmark")
-                                Text(cn ? "猜猜是谁" : "Guess Who")
-                            }
-                            .font(ZenTheme.bodyFont(13))
-                            .foregroundStyle(ZenTheme.gooseYellow)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
-                            .background(
-                                Capsule()
-                                    .fill(ZenTheme.gooseYellow.opacity(0.15))
-                            )
-                        }
-                    }
-                }
+                ResultCardView(
+                    dimensionResult: dim,
+                    delay: Double(index) * 0.12,
+                    onShare: { viewModel.generateShareCard(dimensionResult: dim) }
+                )
             }
 
-            // Social action buttons
-            HStack(spacing: 10) {
-                Button {
-                    if viewModel.canCreateSocialRequest {
-                        viewModel.showEncourageRequest = true
-                    } else {
-                        viewModel.showPaywall = true
-                    }
-                } label: {
-                    HStack(spacing: 6) {
-                        Image(systemName: "hands.sparkles")
-                        Text(cn ? "求加持" : "Blessing")
-                    }
-                    .font(ZenTheme.bodyFont(14))
-                    .foregroundStyle(ZenTheme.inkBlack)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
-                    .background(
-                        RoundedRectangle(cornerRadius: 10)
-                            .fill(ZenTheme.gooseYellow.opacity(0.2))
-                    )
+            // Share hint for custom perspective
+            if !viewModel.isSubscribed, !viewModel.hasShareReward {
+                HStack(spacing: 8) {
+                    Image(systemName: "sparkles")
+                        .font(.system(size: 11))
+                        .foregroundStyle(ZenTheme.gooseYellow.opacity(0.5))
+                    Text(cn
+                         ? "分享任意成果图，即可免费使用一次自定义视角"
+                         : "Share any card to unlock one free custom perspective")
+                        .font(.system(size: 11, weight: .regular, design: .monospaced))
+                        .foregroundStyle(ZenTheme.mist.opacity(0.4))
                 }
-
-                Button {
-                    if viewModel.canCreateSocialRequest {
-                        viewModel.showWitnessRequest = true
-                    } else {
-                        viewModel.showPaywall = true
-                    }
-                } label: {
-                    HStack(spacing: 6) {
-                        Image(systemName: "signature")
-                        Text(cn ? "邀请见证" : "Witness")
-                    }
-                    .font(ZenTheme.bodyFont(14))
-                    .foregroundStyle(ZenTheme.inkBlack)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
-                    .background(
-                        RoundedRectangle(cornerRadius: 10)
-                            .fill(ZenTheme.gooseYellow.opacity(0.2))
-                    )
-                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 10)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(ZenTheme.gooseYellow.opacity(0.03))
+                        .overlay(RoundedRectangle(cornerRadius: 6).stroke(ZenTheme.gooseYellow.opacity(0.08), lineWidth: 0.5))
+                )
             }
 
             if !viewModel.isSubscribed {
@@ -356,30 +323,27 @@ struct MainContentView: View {
             viewModel.showPaywall = true
             HapticManager.selection()
         } label: {
-            HStack(spacing: 10) {
-                Image(systemName: "sparkle")
-                    .foregroundStyle(ZenTheme.gooseYellow)
-                VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 6) {
+                HStack {
                     Text(cn ? "解锁更多视角" : "Unlock more perspectives")
-                        .font(ZenTheme.bodyFont(14))
-                        .foregroundStyle(ZenTheme.inkBlack)
-                    Text(cn ? "更多次数 · 自选维度 · AI个性化生成" : "More daily uses · Custom dimensions · AI-powered")
-                        .font(ZenTheme.caption(11))
-                        .foregroundStyle(ZenTheme.distantMountain.opacity(0.5))
+                        .foregroundStyle(ZenTheme.gooseYellow)
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundStyle(ZenTheme.gooseYellow.opacity(0.3))
                 }
-                Spacer()
-                Image(systemName: "chevron.right")
-                    .font(.caption)
-                    .foregroundStyle(ZenTheme.distantMountain.opacity(0.3))
+                .font(.system(size: 13, weight: .bold, design: .monospaced))
+
+                Text(cn ? "更多次数 · 自选维度 · AI个性化" : "More uses · Custom dims · AI-powered")
+                    .font(.system(size: 11, weight: .regular, design: .monospaced))
+                    .foregroundStyle(ZenTheme.mist.opacity(0.3))
             }
-            .padding(14)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 13)
             .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(ZenTheme.gooseYellow.opacity(0.1))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(ZenTheme.gooseYellow.opacity(0.3), lineWidth: 1)
-                    )
+                RoundedRectangle(cornerRadius: 6)
+                    .fill(ZenTheme.gooseYellow.opacity(0.04))
+                    .overlay(RoundedRectangle(cornerRadius: 6).stroke(ZenTheme.gooseYellow.opacity(0.12), lineWidth: 0.5))
             )
         }
     }
@@ -387,110 +351,83 @@ struct MainContentView: View {
     // MARK: - Action Buttons
 
     private var actionButtons: some View {
-        HStack(spacing: 16) {
-            Button {
-                withAnimation(.easeInOut(duration: 0.5)) { viewModel.reset() }
-                HapticManager.selection()
-            } label: {
-                Label(cn ? "再来一次" : "Try again", systemImage: "arrow.counterclockwise")
-                    .font(ZenTheme.bodyFont(14))
-                    .foregroundStyle(ZenTheme.distantMountain)
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 12)
-                    .background(
-                        Capsule().stroke(ZenTheme.distantMountain.opacity(0.3), lineWidth: 1)
-                    )
-            }
+        Button {
+            withAnimation(.easeInOut(duration: 0.5)) { viewModel.reset() }
+            HapticManager.selection()
+        } label: {
+            Text(cn ? "再来一次" : "RETRY")
+                .font(.system(size: 13, weight: .regular, design: .monospaced))
+                .foregroundStyle(ZenTheme.mist.opacity(0.4))
+                .padding(.horizontal, 24)
+                .padding(.vertical, 10)
         }
-    }
-
-    // MARK: - Decorations
-
-    private var dividerDecoration: some View {
-        HStack(spacing: 6) {
-            Rectangle().fill(ZenTheme.gooseYellow).frame(width: 30, height: 2)
-            Circle().fill(ZenTheme.gooseYellow).frame(width: 5, height: 5)
-            Rectangle().fill(ZenTheme.gooseYellow).frame(width: 30, height: 2)
-        }
-    }
-
-    private var dot: some View {
-        Circle()
-            .fill(ZenTheme.distantMountain.opacity(0.15))
-            .frame(width: 4, height: 4)
     }
 }
 
-// MARK: - Ink Animation
+// MARK: - Terminal Loading Animation
 
 private struct InkAnimationView: View {
     let isChinese: Bool
-    @State private var pulse = false
+    @State private var startDate = Date()
+
+    private let logLines: [(delay: Double, cn: String, en: String)] = [
+        (0.0, "正在连接宇宙数据库...", "connecting to cosmic database..."),
+        (0.4, "查询平行宇宙中的你...", "querying parallel universes..."),
+        (0.8, "计算勇气指数...", "calculating courage index..."),
+        (1.2, "编译命运碎片...", "compiling fate fragments..."),
+        (1.6, "加载真相模块...", "loading truth module..."),
+        (2.0, "渲染结果中...", "rendering results..."),
+    ]
 
     var body: some View {
-        ZStack {
-            Circle()
-                .fill(
-                    RadialGradient(
-                        colors: [
-                            ZenTheme.inkBlack.opacity(0.5),
-                            ZenTheme.inkBlack.opacity(0.15),
-                            .clear,
-                        ],
-                        center: .center,
-                        startRadius: 0,
-                        endRadius: 120
-                    )
-                )
-                .frame(width: 250, height: 250)
-                .scaleEffect(pulse ? 1.08 : 0.92)
-                .blur(radius: 25)
+        TimelineView(.animation(minimumInterval: 1.0 / 10.0)) { timeline in
+            let elapsed = timeline.date.timeIntervalSince(startDate)
 
-            ForEach(0..<3, id: \.self) { i in
-                Circle()
-                    .fill(ZenTheme.inkBlack.opacity(0.2))
-                    .frame(width: 50, height: 50)
-                    .offset(
-                        x: CGFloat([-30, 25, -10][i]),
-                        y: CGFloat([20, -15, 30][i])
-                    )
-                    .scaleEffect(pulse ? 1.1 : 0.85)
-                    .blur(radius: 12)
-            }
+            VStack(alignment: .leading, spacing: 6) {
+                ForEach(Array(logLines.enumerated()), id: \.offset) { _, line in
+                    let lineElapsed = elapsed - line.delay
+                    if lineElapsed > 0 {
+                        let text = isChinese ? line.cn : line.en
+                        let charsToShow = min(text.count, Int(lineElapsed * 25))
+                        let visible = String(text.prefix(charsToShow))
+                        let done = charsToShow >= text.count
 
-            VStack(spacing: 6) {
-                ProgressView()
-                    .tint(ZenTheme.distantMountain.opacity(0.5))
-                Text(isChinese ? "正在召唤勇气…" : "Summoning courage…")
-                    .font(ZenTheme.caption(13))
-                    .foregroundStyle(ZenTheme.distantMountain.opacity(0.5))
+                        HStack(spacing: 6) {
+                            Text(done ? "✓" : "›")
+                                .foregroundStyle(done ? ZenTheme.jade.opacity(0.5) : ZenTheme.gooseYellow.opacity(0.4))
+                            Text(visible)
+                                .foregroundStyle(ZenTheme.mist.opacity(0.4))
+                        }
+                        .font(.system(size: 12, weight: .regular, design: .monospaced))
+                        .transition(.opacity)
+                    }
+                }
+
+                Spacer().frame(height: 10)
+
+                // Thin progress bar
+                let progress = min(elapsed / 3.0, 1.0)
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        RoundedRectangle(cornerRadius: 1)
+                            .fill(ZenTheme.mist.opacity(0.08))
+                            .frame(height: 2)
+                        RoundedRectangle(cornerRadius: 1)
+                            .fill(ZenTheme.gooseYellow.opacity(0.5))
+                            .frame(width: geo.size.width * progress, height: 2)
+                    }
+                }
+                .frame(height: 2)
             }
-        }
-        .frame(height: 200)
-        .onAppear {
-            withAnimation(
-                .easeInOut(duration: 1.4).repeatForever(autoreverses: true)
-            ) {
-                pulse = true
-            }
-        }
-        .transition(
-            .asymmetric(
-                insertion: .scale(scale: 0.01).combined(with: .opacity),
-                removal: .opacity
+            .padding(16)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: 6)
+                    .fill(ZenTheme.cardSurface)
+                    .overlay(RoundedRectangle(cornerRadius: 6).stroke(ZenTheme.terminalStroke, lineWidth: 0.5))
             )
-        )
-    }
-}
-
-// MARK: - Dotted Line
-
-struct DottedLine: Shape {
-    func path(in rect: CGRect) -> Path {
-        Path { p in
-            p.move(to: CGPoint(x: 0, y: rect.midY))
-            p.addLine(to: CGPoint(x: rect.width, y: rect.midY))
         }
+        .transition(.asymmetric(insertion: .opacity, removal: .opacity))
     }
 }
 

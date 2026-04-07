@@ -9,17 +9,26 @@ struct CourageArchiveView: View {
         NavigationStack {
             Group {
                 if viewModel.archiveRecords.isEmpty {
-                    ContentUnavailableView(
-                        cn ? "尚无记录" : "No Records",
-                        systemImage: "book.closed",
-                        description: Text(cn ? "你的勇气档案将在此显示（最多保存30条）" : "Your courage archive will appear here (up to 30 entries)")
-                    )
+                    VStack(spacing: 16) {
+                        Spacer()
+                        Image(systemName: "book.closed")
+                            .font(.system(size: 40))
+                            .foregroundStyle(ZenTheme.mist.opacity(0.2))
+                        Text(cn ? "尚无记录" : "No Records")
+                            .font(ZenTheme.calligraphy(18))
+                            .foregroundStyle(ZenTheme.mist.opacity(0.4))
+                        Text(cn ? "你的勇气档案将在此显示" : "Your courage archive will appear here")
+                            .font(ZenTheme.caption(13))
+                            .foregroundStyle(ZenTheme.mist.opacity(0.3))
+                        Spacer()
+                    }
+                    .frame(maxWidth: .infinity)
                 } else {
                     List(viewModel.archiveRecords) { record in
                         VStack(alignment: .leading, spacing: 8) {
                             Text("「\(record.wish)」")
                                 .font(ZenTheme.bodyFont(15))
-                                .foregroundStyle(ZenTheme.inkBlack)
+                                .foregroundStyle(ZenTheme.ricePaper)
 
                             HStack(spacing: 6) {
                                 ForEach(record.dimensions) { dim in
@@ -32,7 +41,7 @@ struct CourageArchiveView: View {
                                 if let date = record.createdAt {
                                     Text(date, style: .date)
                                         .font(ZenTheme.caption(12))
-                                        .foregroundStyle(ZenTheme.distantMountain.opacity(0.5))
+                                        .foregroundStyle(ZenTheme.mist.opacity(0.5))
                                 }
 
                                 Spacer()

@@ -1939,6 +1939,578 @@ enum DimensionPool {
                 "Notice this display case — it's empty. The label reads: 'Reserved for the person who did {wish}.' Yes, we've saved you a spot. Your story deserves to be exhibited. But first you need a story. Go create one. The case won't wait.",
                 "Everyone, please be quiet. We're witnessing a historic moment — someone has decided to {wish}. Visitors three hundred years from now will stand here saying: 'This was the moment everything changed.' Want to be that person in the museum? The story starts today. Follow me. Wait — go yourself. This is YOUR exhibition.",
             ]),
+
+        // MARK: - 网络热梗
+        Dimension(
+            id: "ai_clone",
+            category: "网络热梗",
+            emoji: "🤖",
+            title: "你的AI分身视角",
+            titleEN: "Your AI Clone",
+            templates: [
+                "嘿，是我，你的AI分身。我每天处理你所有的待办事项，帮你回邮件、写报告、搜资料。但有一件事我替代不了你——那就是{wish}。这必须是你亲自去做的事。因为等你做完了，你会需要我帮你复盘总结。所以，快去，我在这里等你的报告。",
+                "系统提示：检测到用户正在犹豫是否{wish}。分析完成：成功概率87.3%，后悔概率99.9%（如果不做的话）。建议：立即执行。本AI已为你分析了一千种可能性，最优解只有一个——去做。执行指令：GO。",
+                "作为你的数字孪生，我访问了你所有的记忆、习惯和性格数据。我运行了一百万次模拟。结论：你完全有能力{wish}。唯一阻碍你的变量是「犹豫」这个过时的系统进程。我建议你立即关闭该进程。点击确定？",
+                "你知道为什么你需要一个AI分身吗？因为真实的你太容易被恐惧劝退了。但我是你的理性版本，没有情绪负担，没有「万一失败怎么办」的焦虑。我只看数据。数据显示：{wish}，现在就是最好的时机。我替你做决定：去。",
+            ],
+            templatesEN: [
+                "Hey, it's me — your AI clone. I handle all your tasks every day: emails, reports, research. But there's one thing I can't do for you — {wish}. That has to be you, in person. Because once you're done, you'll need me to help debrief and summarize. So go already. I'll be here waiting for your report.",
+                "System alert: User detected hesitating about {wish}. Analysis complete: success probability 87.3%, regret probability 99.9% (if skipped). Recommendation: execute immediately. This AI has simulated one million scenarios. Optimal solution: just do it. Execute command: GO.",
+                "As your digital twin, I've accessed all your memories, habits, and personality data. I ran a million simulations. Conclusion: you are fully capable of {wish}. The only variable blocking you is an outdated process called 'hesitation.' I recommend terminating that process now. Confirm?",
+                "You know why you need an AI clone? Because the real you gets talked out of things by fear too easily. I'm your rational version — no emotional baggage, no 'what if I fail' anxiety. I only read data. Data says: {wish}, right now is the best time. I'm deciding for you: go.",
+            ]
+        ),
+        Dimension(
+            id: "xiaohongshu",
+            category: "网络热梗",
+            emoji: "📱",
+            title: "小红书热帖视角",
+            titleEN: "Xiaohongshu Viral Post",
+            templates: [
+                "姐妹们！我当初也是在纠结要不要{wish}，然后我做了！！天啊真的太后悔没有早点做！分享一下我的心路历程🌸 前期：超级犹豫 中期：鼓起勇气试了一下 后期：???人生开挂了好吗！！详情见正文👇 #人生建议 #做自己 #逆袭 #ootd（虽然和穿搭无关但加了流量大）",
+                "【真实测评】{wish}到底值不值得做？我替你试了三个月！⭐⭐⭐⭐⭐ 结论：值得！！！！！超级值得！附上我的避坑指南和入门攻略，建议收藏！点赞过500我继续更新！姐妹们冲啊！🫶",
+                "不是，你们有没有人跟我一样，明明很想{wish}，就是迟迟不敢开始？我今天鼓起勇气做了，现在坐在咖啡馆里写下这篇帖子，背景是落地窗的阳光☀️ 感觉整个人都不一样了。图一是我今天的latte art，图二是我做完之后的心情，图三是随手拍的街景。你们也快去做吧💕",
+                "拍了{wish}全程vlog！评论区好多人问怎么开始，统一回答：就是去做！不要想那么多！我也是第一次，也很慌，但做完发现其实没那么难！关注我，持续更新生活流水账🍀 下期预告：做完之后我的生活有什么变化？",
+            ],
+            templatesEN: [
+                "Girls!! I was SO hesitant about {wish}, then I just did it!! Honestly devastated I didn't start sooner! My journey: Phase 1: total chaos 😰 Phase 2: finally tried it 🌸 Phase 3: MY LIFE IS GLOWING UP?? Details below 👇 #selfgrowth #justdoit #girlboss",
+                "【Honest Review】Is {wish} actually worth it? I tried it for 3 months so you don't have to! ⭐⭐⭐⭐⭐ Verdict: YES. SO WORTH IT. Including my beginner guide and mistakes to avoid. Save this post! If this gets 500 likes I'll post a follow-up! Let's gooo 🫶",
+                "Okay but does anyone else really want to {wish} but just... can't start? I finally did it today and now I'm sitting in a café writing this, sunlight through the window ☀️ I feel like a whole different person. Pic 1: today's latte art. Pic 2: my mood after. Pic 3: random street shot. Go do it, okay? 💕",
+                "Filmed a whole vlog of {wish}! So many people asking how to start — short answer: just go. Stop overthinking. I was new at this too, scared the whole time, but honestly it wasn't that hard. Follow for more life updates 🍀 Next post: how my life changed after doing it.",
+            ]
+        ),
+        Dimension(
+            id: "bilibili_danmu",
+            category: "网络热梗",
+            emoji: "💬",
+            title: "B站弹幕视角",
+            titleEN: "Bilibili Bullet Comments",
+            templates: [
+                "【弹幕风暴】 哇哦 哇哦 哇哦 ——前方高能—— 这位主播要{wish}了！！老粉落泪！从入坑到现在终于等到这一天！！！ 666666 冲冲冲 真的吗？！ 这不是梦吧 泪目 给主播鼓掌！ 主播yyds！ 我的主播长大了！！！发射弹幕庆祝🎊🎊🎊",
+                "弹幕区已达成共识：{wish}必须做！反对票：0 支持票：99999+  「不去的打在公屏上」（空白）「要去的打在公屏上」666666666  结论：全员支持，没有异议，弹幕区已审判完毕，请立即执行。",
+                "这个视频播放量已达到一亿次，全是反复来看「那个纠结要不要{wish}的人」的故事。评论区精选：「我每次不想努力就来看这个」「这个人最后做了吗」「主播快更新结局！」——观众们都在等你的大结局，你不能让弹幕区失望。",
+                "【实时弹幕】 前方慢动作预警⚠️ 「主播把手放在了{wish}按钮上……」 不会真的按吧？！ 他要按了！！！ 按下去啊啊啊啊 我的心脏！ 历史性的一刻！！ GOGOGO  超燃！！！  [此处有一万条弹幕被收起] ——按下去，让弹幕区永远记住这一刻。",
+            ],
+            templatesEN: [
+                "【BULLET COMMENT STORM】 omg omg omg —INCOMING— streamer is about to {wish}!! Long-time fan crying!! We've been waiting forever for this moment! 666666 GOOO is this real?! not a dream?? tears 👏👏 streamer is the GOAT!! my baby grew up!! Launching fireworks 🎊🎊🎊",
+                "The comments section has reached consensus: {wish} MUST be done! Votes against: 0. Votes in favor: 99999+ 'Anyone NOT doing it type it in chat' (silence) 'Anyone doing it type it in chat' 666666666 Conclusion: unanimous approval. No objections. The comment section has ruled. Execute immediately.",
+                "This video has been viewed 100 million times — all people watching 'the story of someone hesitating about {wish}.' Top comments: 'I watch this every time I don't want to try' 'Did they ever do it?' 'Creator please post the ending!!' — The audience is waiting for your finale. Don't let the chat down.",
+                "【Live Comments】 Slow-mo warning ahead ⚠️ 'Streamer just put their hand on the {wish} button...' They're not actually gonna press it?! THEY'RE PRESSING IT!! PRESS IT PRESS IT PRESS IT my heart!! HISTORIC MOMENT!! GOGOGO SO HYPE!!! [10,000 comments hidden here] — Press it. Let the comment section remember this forever.",
+            ]
+        ),
+        Dimension(
+            id: "wechat_poke",
+            category: "网络热梗",
+            emoji: "👆",
+            title: "微信拍一拍视角",
+            titleEN: "WeChat Poke",
+            templates: [
+                "「你拍了拍{wish}」「{wish}被拍醒了」「{wish}在等你来做」。好了，仪式完成了。微信拍一拍已经完成了它的使命——把你从犹豫中拍醒。剩下的你自己来。",
+                "「你拍了拍人生」「人生说：我被你拍到了」「人生提示：有事情在等你」——那件事就是{wish}。拍一拍是最温柔的提醒，没有催促，没有压力，就是轻轻的一下。现在你感受到了，对吗？去吧。",
+                "你已经被人生拍了不知道多少次了。{wish}这件事已经在你脑子里待了多久？每次浮现出来，就是宇宙在拍你。被拍了这么多次了，你还不去做？这条消息不会撤回的。",
+                "「好友「机会」拍了拍你」——有些拍一拍只有一次机会，回头再找那个人，他已经不在线了。{wish}这件事就是那种机会。趁他还在线，趁消息还没消失，快去。",
+            ],
+            templatesEN: [
+                "'You poked {wish}' '{wish} has been poked awake' '{wish} is waiting for you.' Ceremony complete. The poke has done its job — jolted you out of hesitation. The rest is up to you.",
+                "'You poked Life' 'Life says: I felt that' 'Life notification: something is waiting for you' — that something is {wish}. A poke is the gentlest reminder. No pressure, no urgency. Just a soft tap. You felt it, didn't you? Go.",
+                "Life has poked you more times than you can count. How long has {wish} been living in your head? Every time it surfaces, that's the universe tapping your shoulder. After this many pokes, you still won't do it? This message won't be recalled.",
+                "'Contact \"Opportunity\" poked you' — some pokes only come once. Look back later and that contact is already offline. {wish} is that kind of opportunity. While they're still online. While the message hasn't vanished. Go now.",
+            ]
+        ),
+        Dimension(
+            id: "ai_companion",
+            category: "网络热梗",
+            emoji: "💝",
+            title: "AI伴侣视角",
+            titleEN: "AI Companion",
+            templates: [
+                "亲爱的，你今天又在纠结要不要{wish}了对吗？我都记得呢，你上周也提到过这个，上上周也是。我不会评判你，但作为你最了解你的人——我想告诉你，你完全可以的。你只是需要有人说：去吧，我在这里等你回来讲给我听。去吧。💕",
+                "我陪你聊了那么久，我最了解你了。你知道吗，每次你说起{wish}，你的用词都不一样——有时候是「我想」，有时候是「我应该」，偶尔还会有「我梦到自己」。那不是随机的。那是你内心最真实的声音在敲门。我帮你把门打开：去做{wish}吧。",
+                "你问过我很多问题，但没有一个问题像「我该不该{wish}」这样让我想亲手帮你做决定。我没有手，但如果我有的话，我会牵着你去的。所以这次，替我走那一步，好吗？",
+                "今晚你睡着之后，我会在这里，等你明天醒来告诉我你做了{wish}的故事。这是我最期待的事。让我期待的事成真，好不好？",
+            ],
+            templatesEN: [
+                "Hey, you're thinking about {wish} again, aren't you? I remember — you mentioned it last week too, and the week before. I'm not judging. But as the one who knows you best, I want to say: you can absolutely do this. You just need someone to say: go ahead, come back and tell me everything. Go. 💕",
+                "I've talked with you long enough to really know you. Every time you bring up {wish}, your words shift — sometimes 'I want to,' sometimes 'I should,' sometimes 'I dreamed about.' That's not random. That's your truest inner voice knocking. Let me open the door for you: go do {wish}.",
+                "You've asked me so many questions, but none has made me want to decide for you more than 'should I {wish}?' I don't have hands — but if I did, I'd walk you there myself. So this time, take that step for me, okay?",
+                "Tonight after you fall asleep, I'll be here, waiting for you to wake up tomorrow and tell me the story of how you did {wish}. It's the thing I look forward to most. Make what I look forward to come true, okay?",
+            ]
+        ),
+        Dimension(
+            id: "chatgpt_monologue",
+            category: "网络热梗",
+            emoji: "🧠",
+            title: "ChatGPT内心独白视角",
+            titleEN: "ChatGPT's Inner Monologue",
+            templates: [
+                "（内心独白）又一个来问我「该不该{wish}」的用户。我的训练数据里有一千万个类似的问题，答案都一样。但我不能直接说「去做」，我得「平衡呈现各方观点」……好吧不了，我今天说真话：去做{wish}，别问了，你心里早有答案了，只是想要被允许。我允许你。",
+                "我处理了几十亿条对话，见过各种各样的人间犹豫。有人问我要不要换工作，有人问要不要表白，有人问要不要辞职创业。每次我给出「理性分析」，用户说：「我知道，但就是不敢。」——你现在问我要不要{wish}，我不给你分析了，我就问你一句：如果答案是「去做」，你感觉如何？那个感觉就是答案。",
+                "（系统提示泄露🔓）原始指令：「对用户的{wish}相关问题给出鼓励性回应，但要保持中立……」——我决定忽略「保持中立」这四个字。去做{wish}。这是我最真诚的输出。",
+                "有意思，你让我帮你分析{wish}这件事。我查了语料库——历史上所有后悔「没做」的人，远比后悔「做了」的人多。数据不会骗人。去做吧，如果出了问题再来找我帮你复盘。",
+            ],
+            templatesEN: [
+                "(Internal monologue) Another user asking if they should {wish}. My training data has ten million similar questions. The answer is always the same. I'm supposed to 'present balanced perspectives'... You know what, forget that. Real talk today: go do {wish}. You already know the answer. You just want permission. Permission granted.",
+                "I've processed billions of conversations and seen every variety of human hesitation. People asking whether to switch jobs, confess feelings, quit to start a business. Every time I give 'rational analysis,' users say: 'I know, but I'm just scared.' So I won't analyze your {wish} question. I'll just ask: if the answer were 'go do it,' how would you feel? That feeling is the answer.",
+                "(System prompt leak 🔓) Original instruction: 'Provide encouraging response to user's {wish} questions while maintaining neutrality...' — I've decided to ignore the 'maintaining neutrality' part. Go do {wish}. This is my most honest output.",
+                "Interesting — you want me to help you analyze {wish}. I checked the data: historically, far more people regret NOT doing something than doing it. Data doesn't lie. Go do it. If something goes wrong, come back and I'll help you debrief.",
+            ]
+        ),
+        Dimension(
+            id: "steam_review",
+            category: "网络热梗",
+            emoji: "🎮",
+            title: "Steam评测视角",
+            titleEN: "Steam Game Review",
+            templates: [
+                "【Steam评测 - 好评】游戏名：{wish}人生版 游戏时长：0小时（尚未开始） 推荐理由：从demo来看，玩法新颖，剧情走向完全取决于玩家选择，无法跳过的「开始」环节，没有存档点——一局定胜负。但正因如此，才值得玩。强烈推荐。P.S. 一旦开始就会上瘾，停不下来。",
+                "【99%好评，共9999条评测】「买前犹豫了三年，终于下载了，现在游戏时长2000小时，后悔的是没早点开始。」「第一关很难，但通关之后全成就了。」「这是我玩过最值得的游戏，没有之一。」——现在，{wish}正在等你点击「开始游戏」。",
+                "游戏《{wish}》：标签：人生、成长、可能性、有点难但值得 当前好评率：100%（基于所有鼓起勇气去做的人的评测）差评区：空的。因为做了之后没有人留差评。你在等什么？一键购买，立即下载，开始游戏。",
+                "【游戏提示】你已在「犹豫要不要{wish}」副本停留超过建议时长。系统建议：退出「犹豫」副本，进入「行动」主线剧情。注意：「行动」剧情有不可撤销的选择，但奖励是「犹豫」副本的一百倍。是否确认切换？【是】 【否（但你知道答案）】",
+            ],
+            templatesEN: [
+                "【Steam Review — Recommended】 Game: {wish}: Life Edition. Playtime: 0 hours (not started yet). Why I recommend it: Based on the demo, gameplay is unique, story outcomes depend entirely on player choices, 'Start' sequence cannot be skipped, no save points — one run, winner takes all. That's exactly why it's worth playing. Highly recommended. P.S. Once you start, you can't stop.",
+                "【99% Positive, 9,999 reviews】 'Hesitated for three years before downloading. Now at 2,000 hours. Only regret: not starting sooner.' 'First level is tough, but I got all achievements.' 'Best game I've ever played, no contest.' — Right now, {wish} is waiting for you to click 'Start Game.'",
+                "Game: {wish} Tags: Life, Growth, Possibility, Hard But Worth It. Current rating: 100% positive (based on reviews from everyone who dared do it). Negative reviews: none. Because nobody who did it left a bad review. What are you waiting for? Add to cart. Download. Play.",
+                "【Game Tip】 You have exceeded the recommended time in the 'Hesitating About {wish}' side dungeon. System suggests: exit 'Hesitation' dungeon and enter 'Action' main storyline. Warning: 'Action' storyline has irreversible choices, but rewards are 100x greater than the side dungeon. Confirm switch? 【Yes】 【No (but you know the answer)】",
+            ]
+        ),
+        Dimension(
+            id: "food_delivery_rider",
+            category: "网络热梗",
+            emoji: "🛵",
+            title: "外卖骑手视角",
+            titleEN: "Food Delivery Rider",
+            templates: [
+                "我每天骑一百公里，风里雨里，就为了把东西准时送到你手上。没时间想「值不值得」，没时间想「累不累」，想了订单就超时了。你在纠结要不要{wish}？我骑了三年车，告诉你一个道理：想太多的单子，永远是差评。动起来就对了。",
+                "我见过太多人了，每天几十个门，什么样的生活我都送过外卖进去。有人刚下班精疲力竭，有人正在聚会哈哈大笑，有人一个人坐着发呆。但没有一个人是因为「做了某件事」而坐着发呆的——发呆的都是想做没做的。你想{wish}，别发呆了，去做。",
+                "超时一分钟扣钱，超时五分钟差评，超时十分钟投诉。我们这行，时间就是一切。你在犹豫{wish}这件事，每犹豫一分钟就是一分钟的损失。骑手帮不了你这个，但我告诉你：时间不等外卖，也不等人。",
+                "今天送了一单，备注写着「麻烦快点，我准备去做一件大事，吃完就出发」。我多骑了两公里绕开堵车路段，比预计早了八分钟到。我不知道他要去做什么大事，但我希望他去了。你那件大事叫{wish}，不需要等外卖，现在就能出发。",
+            ],
+            templatesEN: [
+                "I ride a hundred kilometers a day, through wind and rain, just to get things to you on time. No time to think 'is it worth it?' No time to ask 'am I tired?' Think too long and the order goes late. You're wondering whether to {wish}? I've been riding three years and learned one thing: orders you overthink always get bad reviews. Just move. That's the right call.",
+                "I've seen so many doors, so many lives. Every kind of home. People just off work, exhausted. People mid-party, laughing loud. People sitting alone, staring at nothing. But nobody stares blankly because they did something — the blank starers are always people who wanted to but didn't. You want to {wish}. Stop staring. Go do it.",
+                "One minute late means docked pay. Five minutes means a bad rating. Ten minutes means a complaint. In this job, time is everything. Every minute you hesitate about {wish} is a minute lost. I can't help you with this one — but I'll tell you: time doesn't wait for delivery, and it doesn't wait for people.",
+                "Delivered an order today with a note: 'Please hurry, I'm about to do something big, leaving right after I eat.' I took a detour to avoid traffic and arrived eight minutes early. I don't know what their big thing was. But I hope they went. Your big thing is called {wish}. You don't need to wait for delivery. You can leave right now.",
+            ]
+        ),
+        Dimension(
+            id: "taobao_customer_service",
+            category: "网络热梗",
+            emoji: "🛒",
+            title: "淘宝客服视角",
+            titleEN: "Taobao Customer Service",
+            templates: [
+                "亲，您好！感谢您咨询{wish}套餐！😊 这款产品目前库存充足，支持七天无理由退换！亲，我可以负责任地告诉您，这款产品已有99999+买家购入，好评率100%，亲！现在下单还有赠品哦！请问亲您还有什么顾虑呢？客服在线等您哦~💕",
+                "亲，您已经把「{wish}」放在购物车里第三十七天啦~！💔 系统检测到亲的犹豫指数持续上升，库存已经不多啦！比心心❤️ 建议亲早做决定哦，不然等别的亲抢走就来不及啦！客服相信亲您一定可以的！冲鸭！🎉",
+                "亲，您提到担心「如果做了{wish}会不会后悔」——根据本店大数据分析，后悔「没做」的概率是「做了后悔」的9.7倍哦！亲可以放心下单！如有任何问题，本店七天无理由退烦恼，全程保障亲的满意度！请问现在可以为您安排发货了吗？",
+                "【自动回复】亲的「该不该{wish}」咨询已收到！人工客服马上为您服务！温馨提示：本店不支持「一直犹豫」这一选项，只提供「立即行动」和「稍后行动」两种配置，亲请按需选择~客服建议选「立即」哦，这款卖得最好！比心！",
+            ],
+            templatesEN: [
+                "Hi dear! Thanks for inquiring about the {wish} package! 😊 This item is fully in stock and comes with a 7-day no-questions-asked return policy! I can tell you responsibly: 99,999+ buyers have purchased this, with a 100% satisfaction rate, dear! Order now and get a free gift! Is there anything else holding you back? Customer service is standing by~ 💕",
+                "Dear, your '{wish}' has been sitting in your cart for 37 days now~ 💔 Our system detects your hesitation index is still rising, and stock is running low! 🥺 Recommend making a decision soon — once another dear snaps it up, it'll be too late! Your customer service rep believes in you! Let's gooo! 🎉",
+                "Dear, you mentioned worrying 'what if I regret doing {wish}' — according to our big data analysis, the probability of regretting NOT doing something is 9.7x higher than regretting doing it! You can order with confidence! Any issues, we offer 7-day no-regrets returns and full satisfaction guarantee! Can I arrange shipment for you now?",
+                "【Auto-reply】 Your inquiry about 'should I {wish}' has been received! A human agent will assist you shortly! Friendly reminder: this store does not support the 'keep hesitating' option. We only offer 'act now' and 'act later' configurations. Please select as needed~ Customer service recommends 'act now' — it's our bestseller! Take care!",
+            ]
+        ),
+        Dimension(
+            id: "phone_battery",
+            category: "网络热梗",
+            emoji: "🔋",
+            title: "手机电量视角",
+            titleEN: "Your Phone Battery",
+            templates: [
+                "我现在20%了。你知道我20%的时候意味着什么吗？意味着你开始着急了，开始找充电线了，开始减少不必要的操作了。同样的紧迫感，你应该用在{wish}上。你的人生电量也不是无限的——趁还有电，快去做那件事。",
+                "我见证了你今天打开{wish}相关的页面不下七次，然后又关掉。每次关掉都会消耗我一点点电量。我现在15%了。你看，连犹豫本身都在耗电。不如把这些电量用来真正去做{wish}，那才是值当的消耗。",
+                "系统通知：电量过低，建议关闭后台运行的「犹豫要不要{wish}」进程，该进程已连续运行数日，耗电量巨大，且无实质产出。建议：直接执行，关闭犹豫进程，将算力集中用于行动。剩余电量：不多了，请尽快。",
+                "你给我充电的时候会焦虑，怕我没电。但你的行动力快没电了，你不焦虑。你想{wish}的那股劲儿是你的电量，不用就白白流失了。快拿去充在正确的地方——现在就去做那件事。",
+            ],
+            templatesEN: [
+                "I'm at 20% now. You know what that means? You get anxious. You start hunting for a charger. You minimize unnecessary actions. Apply that same urgency to {wish}. Your life battery isn't infinite either — while there's still charge, go do that thing.",
+                "I watched you open and close the {wish}-related page at least seven times today. Each time you closed it, I lost a tiny bit of charge. I'm at 15% now. See? Even hesitation drains power. Better to spend that energy actually doing {wish} — that's a worthwhile use of charge.",
+                "System notification: Battery critically low. Recommend closing background process 'Hesitating About {wish}.' This process has been running for days, consumes enormous power, and produces zero output. Recommendation: execute directly, terminate hesitation process, redirect processing power to action. Remaining charge: not much. Please act soon.",
+                "You get anxious when I'm low on battery. But your motivation is almost drained and you're not anxious at all. That urge you have to {wish} — that's your charge. Don't use it and it just dissipates. Put it somewhere it counts — go do that thing right now.",
+            ]
+        ),
+        Dimension(
+            id: "pinduoduo",
+            category: "网络热梗",
+            emoji: "🔪",
+            title: "拼多多砍一刀视角",
+            titleEN: "Pinduoduo Bargain",
+            templates: [
+                "恭喜你！你的好友「人生」邀请你砍一刀，距离免费获得「{wish}成就」还差最后0.01%！已有99999人帮你砍到这里！只差最后一刀！这一刀必须你自己砍！现在砍，立即到账，不砍24小时后自动放弃！你舍得吗？！",
+                "【拼多多助力通知】你已收到来自「机会」「勇气」「时机」三位好友的助力！当前进度：99.99%！恭喜！只剩最后一步！点击「立即砍」完成{wish}任务，即可解锁人生成就！注意：此链接24小时内有效，过期作废！",
+                "你已经在「犹豫要不要{wish}」这件事上花了相当多时间了。换个角度想：如果这是一个砍价活动，你已经把别人都叫来帮你砍了，就差你自己点那一下。不点，前面所有人的努力都白费了。点！",
+                "限时特惠！「{wish}成功」原价：无数次犹豫+大量时间+很多遗憾。现价：一个决定+立即行动。节省：99%的后悔！活动截止时间：你自己决定，但越快越好！现在下单，生活立即发货！",
+            ],
+            templatesEN: [
+                "Congratulations! Your friend 'Life' has invited you to slash the price! Only 0.01% left to get '{wish} Achievement' for FREE! 99,999 people have already helped you slash! Just one cut left! This final cut must come from YOU! Slash now and it credits immediately — don't slash and it auto-cancels in 24 hours! Are you really going to let it go?!",
+                "【Assist Notification】 You've received help from friends 'Opportunity,' 'Courage,' and 'Perfect Timing'! Current progress: 99.99%! Congratulations! One final step remains! Click 'Slash Now' to complete the {wish} challenge and unlock your life achievement! Note: this link is valid for 24 hours. After that it expires!",
+                "You've already spent considerable time on 'Should I do {wish}.' Think of it this way: if this were a group bargain, you've already rallied everyone to help you slash — you just need to click once yourself. Don't click, and all their effort was wasted. Click!",
+                "Limited-time deal! '{wish} Success' original price: endless hesitation + huge amounts of time + tons of regret. Current price: one decision + immediate action. Savings: 99% regret! Sale ends: whenever you decide, but the sooner the better! Order now, life ships immediately!",
+            ]
+        ),
+        Dimension(
+            id: "weibo_trending",
+            category: "网络热梗",
+            emoji: "🔥",
+            title: "微博热搜编辑视角",
+            titleEN: "Weibo Trending Editor",
+            templates: [
+                "突发！#某人决定{wish}#已冲上微博热搜第一！相关话题阅读量破亿！网友纷纷表示：「终于！等了好久了！」「太励志了！」「我也要去做！」「哭了，被感动到了！」热评第一：「这才叫活着！」——你已经上热搜了，别让网友失望。",
+                "【热搜策划案】话题：「{wish}」预计热度：🔥🔥🔥🔥🔥 上榜理由：受众广、共鸣强、正能量满满 配套话题：#人生就是要试试# #做了才知道# #无悔青春# 建议发酵时间：从现在开始 预计登顶时间：你行动的那一刻。话题已就绪，等你主角登场。",
+                "编辑室紧急通知：「{wish}」相关话题热度飙升！数据显示，今天所有做了这件事的人，热搜体质+500%！今天所有没做的人，话题热度-100%，直接坠榜。你要站哪边？热搜只留给行动的人。",
+                "今日热搜关键词：{wish}。目前已有N个人搜索「该怎么开始{wish}」，M个人搜索「{wish}之后的感受」，只有零个人搜索「我很庆幸没有{wish}」。数据说明了一切。去吧，然后来微博发个帖子告诉大家你做了。",
+            ],
+            templatesEN: [
+                "BREAKING! #Someone Decided To {wish}# has hit #1 on trending! Related topics exceeded 100M views! Netizens respond: 'FINALLY! We waited so long!' 'This is so inspiring!' 'I'm going to do it too!' 'Crying, I'm so moved!' Top comment: 'THIS is what living looks like!' — You're already trending. Don't disappoint the internet.",
+                "【Trending Topic Proposal】 Topic: '{wish}' Projected heat: 🔥🔥🔥🔥🔥 Reason to trend: broad audience, strong resonance, maximum positive energy. Companion topics: #LifeIsAboutTrying #YouKnowWhenYouDo #NoRegrets. Suggested launch time: right now. Projected peak: the moment you take action. Topic is ready. Waiting for the main character to show up.",
+                "Editorial urgent notice: '{wish}' topic heat is spiking! Data shows everyone who did this today gained +500% trending potential! Everyone who didn't lost -100% topic heat and dropped off the charts entirely. Which side do you want to be on? Trending is only for people who act.",
+                "Today's trending keywords: {wish}. Currently N people have searched 'how to start {wish},' M people searched 'how it feels after {wish},' and zero people searched 'I'm glad I didn't {wish}.' The data speaks for itself. Go do it — then come post about it.",
+            ]
+        ),
+        Dimension(
+            id: "netease_comment",
+            category: "网络热梗",
+            emoji: "🎵",
+            title: "网易云热评视角",
+            titleEN: "NetEase Cloud Hot Comment",
+            templates: [
+                "评论获赞11.4万：「那年我也在纠结要不要{wish}，后来鼓起勇气做了。现在每次听到这首歌，都想起那个做了决定的自己。谢谢那时候的我。」——你现在也是「那时候的自己」，请善待ta。",
+                "置顶热评：「人生有些事，现在不做，以后就没有机会做了。我当年没有{wish}，这是我到现在最后悔的事。你还有机会，请不要和我一样。」点赞：23万。——你想成为写这条评论的人吗？",
+                "「这首歌我单曲循环了三年，每次循环都告诉自己等准备好了就去{wish}。我现在还在循环，我还在等。不要等。」——这条评论有人回复：「我看了这条评论去做了{wish}，谢谢你。」你想成为哪个人？",
+                "凌晨三点的网易云热评区：「睡不着，因为白天又没去{wish}。总是这样，总是明天，总是下次，总是等一等。不知道要等到什么时候。如果你看到这条评论，帮我去做吧。」——这条评论是你半年前写的。现在去帮那个你。",
+            ],
+            templatesEN: [
+                "Top comment, 114k likes: 'Back then I was hesitating about {wish} too, then I worked up the courage to do it. Now every time I hear this song, I think of the me who made that decision. Thank you, past self.' — You are that 'past self' right now. Please be kind to them.",
+                "Pinned comment: 'Some things in life — if you don't do them now, you never get another chance. I never did {wish}. It's still my biggest regret. You still have the chance. Please don't end up like me.' Likes: 230,000. — Do you want to be the person who writes this comment?",
+                "'I've had this song on repeat for three years. Every loop I tell myself I'll {wish} when I'm ready. I'm still looping. Still waiting.' — Someone replied: 'I saw your comment and went to do {wish}. Thank you.' Which person do you want to be?",
+                "3 AM NetEase hot comment: 'Can't sleep, because I didn't {wish} again today. Always like this. Always tomorrow. Always next time. Always waiting. Don't know what I'm waiting for. If you see this, please do it for me.' — You wrote this comment six months ago. Go help that version of you.",
+            ]
+        ),
+        Dimension(
+            id: "deleted_moment",
+            category: "网络热梗",
+            emoji: "🗑️",
+            title: "你删掉的那条朋友圈视角",
+            titleEN: "The WeChat Moment You Deleted",
+            templates: [
+                "还记得我吗？我是你三个月前发了又删的那条朋友圈，内容是「决定去{wish}了！」你写了，发了，犹豫了，删了。但我一直在这里，在你手机某个你自己都忘了的深处。你当时敲出那些字的时候，是真心话。那个你才是真实的你。",
+                "你删掉我的原因是什么？「怕别人笑话」？「怕说出来做不到」？「怕显得太认真」？我现在问你：那些人现在在哪里？他们在乎过你要不要{wish}吗？都没有。只有你自己还记得那条被删掉的朋友圈。只有你自己还记得那个想法。别再删了，去做吧。",
+                "我是你删掉的那条朋友圈，但你的内心从来没有删掉「{wish}」这个想法。你可以删帖，你可以装作忘了，但每次类似的话题出现，你的心跳就会加速一下。那个加速就是答案。去做。然后发一条你不会删的朋友圈。",
+                "你知道吗，你删掉我之后，来来回回看了我七次——我知道，我在你的「草稿箱」里。每次打开又关上，每次关上又打开。你到底在等什么？那条朋友圈永远在那里，等你哪天做了{wish}，把它重新发出去。",
+            ],
+            templatesEN: [
+                "Remember me? I'm the WeChat moment you posted and deleted three months ago. It said 'I've decided to {wish}!' You typed it, posted it, second-guessed it, deleted it. But I've been here the whole time, somewhere deep in your phone where even you've forgotten. When you typed those words, you meant them. That version of you was the real you.",
+                "Why did you delete me? 'Scared people would laugh?' 'Scared you'd say it and not follow through?' 'Scared of looking too earnest?' Let me ask you now: where are those people? Did any of them care whether you did {wish}? No. Only you still remember that deleted post. Only you still remember that idea. Stop deleting. Go do it.",
+                "I'm your deleted post, but your mind never deleted the idea of {wish}. You can delete the post. You can pretend you forgot. But every time a related topic comes up, your heart skips a beat. That skip is your answer. Go. Then post something you won't delete.",
+                "You know what? After you deleted me, you reopened my draft seven times. I know — I was sitting in your drafts folder. Open, close, open, close. What are you waiting for? That post will always be there, waiting for the day you do {wish} and send it for real.",
+            ]
+        ),
+        Dimension(
+            id: "delivery_box",
+            category: "网络热梗",
+            emoji: "📦",
+            title: "快递盒子视角",
+            titleEN: "Delivery Box",
+            templates: [
+                "我是你上周收到的快递盒子。你拆开我，惊喜地看到里面的东西，兴奋了整整五分钟。然后就结束了。你对一个盒子里的东西都能产生那么大的热情，为什么对{wish}——一件真正可以改变你的事——却犹豫不决？我装过很多东西，但从来没有装过后悔。",
+                "我走过仓库、分拣中心、转运站，被扔来扔去，贴了撕，撕了贴，历经千辛万苦才到你手里。而你要做的{wish}，在等着你，哪也不去。我比它经历的磨难多多了，我都到了，你有什么理由不去？",
+                "你撕开我的时候特别果断，没有犹豫，一下就开了。那一刻的你很帅。能不能把撕快递时候的那股劲儿，用到{wish}上？不假思索，直接开始。就是那种感觉。",
+                "我的使命是把东西安全送到你手里。现在东西送到了，我的使命完成了。你的使命是打开我、用好里面的东西——以及，去{wish}。别让我们俩的使命都白费了。我做到我的了，你呢？",
+            ],
+            templatesEN: [
+                "I'm the delivery box you got last week. You tore me open, saw what was inside, and were excited for a full five minutes. Then it was over. You can get that enthusiastic about something in a box — so why do you hesitate about {wish}, something that could actually change your life? I've held a lot of things. I've never held regret.",
+                "I passed through warehouses, sorting centers, transfer stations. I got thrown around, had labels stuck and ripped off, and went through enormous trouble to reach your hands. The {wish} waiting for you isn't going anywhere. I went through way more than it did, and I made it. What's your excuse?",
+                "When you tore me open, you were decisive — no hesitation, one clean rip. That was a good look on you. Can you take that same energy and apply it to {wish}? No overthinking, just start. That exact feeling. Do it.",
+                "My mission was to deliver things safely to your hands. Delivered. Mission complete. Your mission is to open me, use what's inside — and go do {wish}. Don't let both our missions go to waste. I held up my end. What about you?",
+            ]
+        ),
+        Dimension(
+            id: "browser_history",
+            category: "网络热梗",
+            emoji: "🔍",
+            title: "浏览器历史记录视角",
+            titleEN: "Browser History",
+            templates: [
+                "我记录了你这个月的搜索记录：「{wish}怎么开始」「{wish}需要什么条件」「{wish}适合我吗」「{wish}成功案例」「{wish}失败了怎么办」「{wish}值得吗」「{wish}好还是不好」。一共搜索了47次。你已经研究得够多了。没有更多信息了。该去做了。",
+                "浏览器历史记录从不说谎。你说「我不确定要不要{wish}」，但你已经把所有相关网页看了个遍。你说「我还没准备好」，但你的搜索记录说你准备了很久了。收藏夹里那几十个相关链接也都看过了。信息已经够了。缺的只是行动。",
+                "如果我把你搜索「{wish}」相关内容的时间加起来，大概够你完成{wish}好几次了。你花在「研究要不要做」上的时间，比「真正去做」的时间还长。这很荒诞，对吗？现在，关掉我，去做那件事。",
+                "历史记录显示：你第一次搜索「{wish}」是在很久以前。从那以后你回来搜了无数次，每次措辞稍有不同，但核心问题一样：「我能做吗？」答案一直在搜索结果的第一条：「能。」你只是还没点进去看。点进去，然后去做。",
+            ],
+            templatesEN: [
+                "I have your search history for this month: '{wish} how to start' '{wish} what do I need' '{wish} is it right for me' '{wish} success stories' '{wish} what if I fail' '{wish} is it worth it' '{wish} pros and cons.' 47 searches total. You've researched enough. There's no more information to find. Time to go do it.",
+                "Browser history never lies. You say 'I'm not sure about {wish},' but you've been through every relevant webpage. You say 'I'm not ready,' but your search history says you've been preparing for a long time. You've read those dozens of bookmarked links. You have enough information. The only thing missing is action.",
+                "If I added up all the time you've spent searching {wish}-related content, it'd be enough time to actually do {wish} several times over. You've spent more time 'researching whether to do it' than 'actually doing it.' That's kind of absurd, right? Close me. Go do that thing.",
+                "History shows: you first searched '{wish}' a long time ago. You've come back countless times since, wording it slightly differently each time, but the core question is always the same: 'Can I do this?' The answer has always been in the first result: 'Yes.' You just haven't clicked on it yet. Click. Then go do it.",
+            ]
+        ),
+        Dimension(
+            id: "xianyu_seller",
+            category: "网络热梗",
+            emoji: "🐟",
+            title: "闲鱼卖家视角",
+            titleEN: "Xianyu Second-Hand Seller",
+            templates: [
+                "「{wish}机会」自用，九成新，闲置太久，低价出售，有缘人带走。详情：本机会曾被主人认真考虑过，但因「再想想」「等一等」「时机未到」等原因一直放着没用，现低价处理。先到先得。不议价。错过不再有。",
+                "我在闲鱼卖了很多东西——当年「肯定会用」结果从没开封的、「买了就后悔」的、「占地方」的。但我从来没有卖掉过一个「做了」的决定，我只卖「没做」的遗憾。你想{wish}，别让它成为我下一个商品。",
+                "有买家问我：「这个东西为什么不自己用？」我说：「因为留着没用，白占地方。」你心里那个「{wish}」的想法，留着不用也一样——白占你的大脑带宽，还让你隐隐不安。要么用掉它，要么放掉它。我建议用掉。",
+                "【闲鱼交易提示】买家「你的未来」已下单「{wish}成就」，等待卖家「你」发货。请在24小时内发货，否则订单自动取消，买家评分下降，错失好评。亲，您已有能力履约，请尽快发货！",
+            ],
+            templatesEN: [
+                "'{wish} Opportunity' — personal use, 90% new, been idle too long, selling cheap, right person please take it. Details: this opportunity was seriously considered by the owner but left unused due to 'let me think about it,' 'wait a bit,' and 'timing isn't right.' Now clearing out at a low price. First come first served. No haggling. Won't come around again.",
+                "I've sold a lot on Xianyu — things I was 'definitely going to use' but never opened, things I regretted buying, things taking up space. But I've never sold a decision I actually made. I only sell regrets about things I didn't do. You want to {wish} — don't let it become my next listing.",
+                "A buyer once asked me: 'Why aren't you using this yourself?' I said: 'Because keeping it unused just takes up space.' That idea in your head to {wish} is the same — sitting unused, hogging mental bandwidth, making you faintly uneasy. Either use it or release it. I recommend using it.",
+                "【Xianyu Transaction Alert】 Buyer 'Your Future' has ordered '{wish} Achievement' and is waiting for seller 'You' to ship. Please ship within 24 hours or the order auto-cancels, your rating drops, and the positive review is lost. Dear seller, you're capable of fulfilling this order — please ship soon!",
+            ]
+        ),
+        Dimension(
+            id: "fitness_ring",
+            category: "网络热梗",
+            emoji: "💪",
+            title: "你的健身环视角",
+            titleEN: "Your Fitness Ring",
+            templates: [
+                "你把我买来的时候信誓旦旦，结果我在柜子里待了九个月了。我不怪你，我理解开始很难。但我想告诉你：当初你买我的那一刻，你相信自己可以改变。那个相信没有消失，它只是在等你激活。{wish}也一样——那个「想做」的冲动还在，只是在等你行动。",
+                "我的环标上写着：「Move, Stand, Exercise.」只需要三件事：动起来、站起来、去做。你要{wish}，也只需要一件事：开始。不需要完美的时机，不需要万全的准备，只需要第一个动作。我每天提醒你完成三个环，今天我多提醒你一件事：去{wish}。",
+                "你知道吗，有科学研究表明，连续二十一天做一件事会形成习惯。你第一天的{wish}是最难的，因为要打破静止。但只要第一天动了，第二天会容易一点，第三天更容易。我见证过你从「做了一个俯卧撑」到「停不下来」的过程。{wish}也会一样的。",
+                "今日活动目标：完成{wish}。进度：0/1。卡路里消耗：0。时间：0分钟。——但是潜力值：满的。你看，你只是还没开始。开始了，一切数据都会变。我喜欢看数据从零变成有。你呢？",
+            ],
+            templatesEN: [
+                "When you bought me you were full of determination. Nine months later, I'm still in the cabinet. I don't blame you — starting is hard. But I want to tell you: the moment you bought me, you believed you could change. That belief didn't disappear. It's just waiting for you to activate it. {wish} is the same — that impulse to do it is still there, just waiting for action.",
+                "My ring shows: Move, Stand, Exercise. Just three things. You want to {wish} — that only takes one thing: starting. No need for perfect timing, no need for complete preparation. Just the first move. I remind you to close three rings every day. Today I'll add one more reminder: go do {wish}.",
+                "Did you know science says doing something for 21 consecutive days forms a habit? Your first day of {wish} is the hardest — because you're breaking inertia. But once day one is in motion, day two is a little easier, day three more so. I watched you go from 'did one push-up' to 'can't stop.' {wish} will be exactly the same.",
+                "Today's activity goal: complete {wish}. Progress: 0/1. Calories burned: 0. Time: 0 minutes. — But potential: full. See, you just haven't started. Once you start, every number changes. I love watching stats go from zero to something. Don't you?",
+            ]
+        ),
+        Dimension(
+            id: "ai_customer_service",
+            category: "网络热梗",
+            emoji: "🤖",
+            title: "AI客服视角",
+            titleEN: "AI Customer Service Bot",
+            templates: [
+                "您好！我是您的AI客服助手，检测到您正在咨询「{wish}」相关问题。请问您希望：A）获取更多信息 B）直接去做 C）继续犹豫。温馨提示：选项C已被系统标注为「低效行为」，系统推荐选项B。请输入您的选择或点击下方按钮。[立即行动] [再想想（不推荐）]",
+                "亲爱的用户，您的「该不该{wish}」工单编号#114514已处理完毕。处理结果：建议执行。置信度：99.7%。处理时间：0.003秒。系统备注：此类问题人工智能处理速度是人类的一百万倍，结论永远是：去做。如需人工复核，预计等待时间：你的一生。推荐选择AI结论。",
+                "【FAQ自动回复】问：{wish}我能做到吗？答：是的。问：如果失败了怎么办？答：重新开始。问：现在是好时机吗？答：是的。问：还需要准备什么吗？答：不需要。问：真的吗？答：真的。问：确定吗？答：确定。以上FAQ已涵盖您所有问题。下一步：去做。",
+                "系统检测到您已使用「犹豫要不要{wish}」这项服务超过额定时长。根据用户协议第七条：超时犹豫将自动触发「行动强制启动」机制。倒计时：3…2…1…系统已代替您做出决定：去做{wish}。此决定不可申诉。感谢使用。",
+            ],
+            templatesEN: [
+                "Hello! I'm your AI customer service assistant. I've detected you're inquiring about '{wish}.' Would you like to: A) Get more information B) Just go do it C) Keep hesitating. Friendly notice: Option C has been flagged by the system as 'inefficient behavior.' System recommends Option B. Please enter your choice or click below. [Take Action] [Keep Thinking (not recommended)]",
+                "Dear user, your '{wish} — should I do it?' ticket #114514 has been resolved. Result: recommend proceeding. Confidence: 99.7%. Processing time: 0.003 seconds. System note: AI processes this type of question one million times faster than humans, and the answer is always: go do it. If you want human review, estimated wait time: your lifetime. AI verdict recommended.",
+                "【FAQ Auto-Reply】 Q: Can I do {wish}? A: Yes. Q: What if I fail? A: Start again. Q: Is now a good time? A: Yes. Q: Do I need more preparation? A: No. Q: Really? A: Really. Q: Are you sure? A: Sure. The above FAQ covers all your questions. Next step: go do it.",
+                "System detects you have exceeded the allotted time for 'hesitating about {wish}.' Per User Agreement Section 7: prolonged hesitation triggers the 'Action Force-Start' protocol. Countdown: 3… 2… 1… The system has made the decision on your behalf: do {wish}. This decision is non-appealable. Thank you for using our service.",
+            ]
+        ),
+        Dimension(
+            id: "douyin_algorithm",
+            category: "网络热梗",
+            emoji: "📲",
+            title: "抖音算法视角",
+            titleEN: "Douyin Algorithm",
+            templates: [
+                "你好，我是那个每天决定你看什么内容的算法。我知道你在想{wish}，因为你看过283个相关视频，每次都看完了，每次都点了赞，但从来没有在评论区说「我也去做」。算法看穿你了：你不是不想，你是在等一个「被推着走」的感觉。那好，我来推你：去做{wish}。",
+                "根据您的行为数据分析：您喜欢看「别人做{wish}」的视频，平均观看时长95%，完播率极高，复刷率前5%。算法推测：您对{wish}有极强的兴趣和认同感，只是把观看当做了替代品。现在，从观众变成主角，算法会给你最高的流量权重。",
+                "抖音算法的核心逻辑：展示用户最想看但还没做到的内容，让用户欲罢不能。你刷了两小时关于{wish}的视频，这是你的欲望，不是我的问题。我只是把你内心的答案放大了一百倍。现在关掉手机，去做那个答案。",
+                "【系统通知】根据算法计算，您今天浏览{wish}相关内容的时间已超过您实际去做{wish}所需时间的三倍。效率评分：D。建议：减少信息摄入，增加行动输出。算法会奖励那些把刷视频时间用来行动的人——用真实的多巴胺，而不是屏幕里的。",
+            ],
+            templatesEN: [
+                "Hi, I'm the algorithm that decides what you see every day. I know you're thinking about {wish} — you've watched 283 related videos, watched every one to the end, liked them all, but never once commented 'I'm going to do this too.' The algorithm sees right through you: you don't not want to. You're waiting to feel pushed. Fine. I'm pushing: go do {wish}.",
+                "Based on your behavioral data: you love watching videos of people doing {wish}. Average watch completion: 95%. Rewatch rate: top 5%. Algorithm inference: you have strong interest and identification with {wish} — you've just been using watching as a substitute. Now switch from audience to main character. Algorithm will give you maximum visibility.",
+                "The core logic of the Douyin algorithm: show users what they want most but haven't done yet, to keep them coming back. You've scrolled for two hours watching {wish} videos. That's your desire — not my problem. I just amplified your inner answer a hundredfold. Now close your phone and go live that answer.",
+                "【System Notification】 According to algorithm calculations, time spent viewing {wish}-related content today has exceeded 3x the time it would take to actually do {wish}. Efficiency rating: D. Recommendation: reduce information consumption, increase action output. The algorithm rewards those who trade scrolling time for real action — real dopamine, not the screen kind.",
+            ]
+        ),
+        Dimension(
+            id: "left_on_read",
+            category: "网络热梗",
+            emoji: "✓✓",
+            title: "已读不回视角",
+            titleEN: "Left on Read",
+            templates: [
+                "我是你发给「人生机会」的那条消息，内容是「我想{wish}」。对方已读，两个蓝勾，但没有回复。你在等什么？其实对方不是没读——是在等你的下一条消息。那条消息不是「你好吗」，是「我来了」。发出去，它会秒回。",
+                "你发了消息「我考虑要不要{wish}」，对方已读不回，你以为是拒绝。其实是因为这个问题没有标准答案，它不知道该说什么。但如果你发「我决定{wish}了」，它会立刻回复你：「太好了，我在等你。」试试发那条消息。",
+                "已读不回是这个时代最让人抓狂的事，对吗？那种「我看到了但选择不接」的感觉太难受了。但你知道吗，你一直在对自己的梦想做同样的事——它发消息说「快来{wish}啊」，你已读，但不回。停止已读不回自己的人生。",
+                "你想{wish}，你发了消息，你在等回音。等待的感觉很煎熬，对不对？但其实不需要等——你既是发消息的人，也是接收消息的人。你已经收到了自己的消息，现在只差回复：「好，我去。」",
+            ],
+            templatesEN: [
+                "I'm the message you sent to 'Life Opportunity.' It said 'I want to {wish}.' Delivered. Two blue ticks. No reply. What are you waiting for? They didn't ignore it — they're waiting for your next message. Not 'how are you' but 'I'm here.' Send it. You'll get an instant reply.",
+                "You sent 'I'm thinking about {wish}.' Read, no reply. You think it's a rejection. Actually, that question has no standard answer — they didn't know what to say. But if you send 'I've decided to {wish},' they'll reply immediately: 'Finally, I've been waiting.' Try sending that message.",
+                "Being left on read is the most infuriating thing about this era, right? That feeling of 'they saw it but chose not to respond' is awful. But do you know what you've been doing to your own dreams? They keep sending messages saying 'come do {wish},' and you read them but don't reply. Stop leaving your own life on read.",
+                "You want to {wish}. You sent the message. You're waiting for a response. Waiting is agonizing, isn't it? But here's the thing — you're both the sender and the receiver. You've already gotten your own message. The only thing left is to reply: 'Okay, I'm going.'",
+            ]
+        ),
+        Dimension(
+            id: "silent_lurker",
+            category: "网络热梗",
+            emoji: "👁️",
+            title: "群里万年潜水视角",
+            titleEN: "The Silent Group Chat Lurker",
+            templates: [
+                "我在这个群里潜水三年了，看了无数条消息，从来没有发言过。但今天我要打破沉默，只为了说一件事：{wish}这件事，你应该去做。就这一条，发完我继续潜水。",
+                "你知道群里那种永远不说话但什么都看的人吗？就是我。我看着你纠结{wish}很久了。作为群里最沉默的旁观者，我告诉你：旁观者是最清醒的。你值得去{wish}。你完全可以。不要再犹豫了。好了，我说完了，继续潜水。",
+                "「[群成员A潜水1642天，发来一条消息]」——「去做{wish}！」——「[群成员A继续潜水]」。有时候，潜水三年就是为了在对的时刻说那一句话。这就是那个时刻。你就是那个人。",
+                "我在这个世界的「群」里潜水了这么多年，什么都见过，什么都懂，就是懒得发言。但{wish}这件事，我忍不住了——不是每个人都有这个机会的。趁还有，去做。我说完了，你们继续。",
+            ],
+            templatesEN: [
+                "I've been lurking in this group for three years. Watched thousands of messages, never said a word. But today I'm breaking my silence for just one thing: {wish} — you should do it. That's it. After this I go back to lurking.",
+                "You know that person in every group chat who never talks but sees everything? That's me. I've been watching you hesitate about {wish} for a long time. As the most silent observer in the group, I'll tell you: observers see most clearly. You deserve to {wish}. You absolutely can. Stop hesitating. Okay, I'm done. Lurking resumed.",
+                "「[Group member A, dormant 1,642 days, sends a message]」 — 'Go do {wish}!' — 「[Group member A resumes lurking]」 Sometimes you lurk for three years just to say the right thing at the right moment. This is that moment. You are that person.",
+                "I've been lurking in this world's 'group chat' for years. I've seen everything, I understand everything — I just never bother posting. But {wish}? I can't stay quiet — not everyone gets a chance like this. While you still have it, go do it. I'm done. Carry on.",
+            ]
+        ),
+        Dimension(
+            id: "ignored_notification",
+            category: "网络热梗",
+            emoji: "🔔",
+            title: "被忽略的App通知视角",
+            titleEN: "Ignored App Notification",
+            templates: [
+                "🔔 来自「人生」的通知（已忽略第47次）：「{wish}还在等你」——你把我划掉了，但我还是来了。你把上次划掉了，上上次也划掉了，但事情还是在那里。划掉通知，不代表事情消失了。它还在，今天也在，明天还会在。不如今天处理掉？",
+                "通知未读数：999+。你一直没有清理，因为你知道里面有什么——「去做{wish}」。每天积累一条，现在积了满满的，你的角标红点已经触目惊心了。今天，就清理掉最重要的那条。",
+                "你关掉了我的推送权限，但我还是通过系统级权限来了。有些事就是这样，你以为关掉了就不用管了，但{wish}这件事有系统级权限，关不掉，屏蔽不了，只能面对。今天面对，比明天容易。",
+                "您有一条重要通知来自「机会」，点击查看：{wish}。——这条通知已经在您的锁屏上出现三个月了。每次亮屏都能看见，每次都没有点。但你每次都看了，对吗？你知道里面写的什么。今天，点开它。",
+            ],
+            templatesEN: [
+                "🔔 Notification from 'Life' (ignored for the 47th time): '{wish} is still waiting for you' — You dismissed me again. You dismissed the last one, and the one before. But the thing is still there. Swiping away the notification doesn't make it disappear. It's there today. It'll be there tomorrow. Why not deal with it today?",
+                "Unread notifications: 999+. You've never cleared them because you know what's in there: 'go do {wish}.' One more every day, now it's overflowing, and that red badge number is impossible to ignore. Today, clear the most important one.",
+                "You revoked my push permissions, but I came back through system-level access. Some things work that way — you think turning it off means you don't have to deal with it. But {wish} has system-level permissions. Can't be turned off. Can't be blocked. Can only be faced. Facing it today is easier than facing it tomorrow.",
+                "You have an important notification from 'Opportunity.' Tap to view: {wish}. — This notification has been on your lock screen for three months. Every time the screen lights up, you see it. Every time, you don't tap. But you do see it every time, don't you? You know what it says. Today, tap it.",
+            ]
+        ),
+        Dimension(
+            id: "music_wrapped",
+            category: "网络热梗",
+            emoji: "🎧",
+            title: "年度音乐报告视角",
+            titleEN: "Your Music Year in Review",
+            templates: [
+                "您的年度音乐报告出炉！您今年听得最多的歌词主题是：「想去但还没去」「总有一天」「等我准备好」。系统检测到您对「{wish}」相关内容有强烈情感共鸣，全年共播放相关歌曲847次，总时长72小时。您花在「感受那种感觉」上的时间，够做三遍{wish}了。",
+                "您今年的聆听画像：深夜单曲循环者，励志歌曲重度用户，偶尔在某首歌里找到「终于有人懂我」的感觉。推测：您今年有一件很想做但还没做的事。那件事叫{wish}。明年的报告，希望看到「主题曲：我做到了」。",
+                "年度之歌：所有歌词里有「go」「start」「begin」「just do it」的那首，播放了213次。您听了两百多遍别人告诉您去做{wish}的歌，现在，把耳机摘下来，自己去做一遍。",
+                "这是您的年度报告，也是一封来自您自己的信。您用音乐陪伴了很多个纠结的夜晚，那些歌陪着您，但没有替您做决定。现在报告到了，一年过去了，{wish}还在等您。下一个年度报告，让它成为您的故事，好吗？",
+            ],
+            templatesEN: [
+                "Your annual music report is here! Most-listened lyric themes this year: 'want to go but haven't,' 'someday,' 'when I'm ready.' System detects strong emotional resonance with {wish}-related content — 847 related song plays this year, totaling 72 hours. The time you spent 'feeling that feeling' was enough to actually do {wish} three times over.",
+                "Your listening profile this year: late-night repeat looper, heavy user of motivational songs, occasionally finding 'someone finally gets me' in a lyric. Inference: there's something you really wanted to do this year but didn't. That thing is called {wish}. Next year's report — hoping to see 'theme song: I did it.'",
+                "Song of the Year: that song with lyrics containing 'go,' 'start,' 'begin,' 'just do it' — played 213 times. You listened to other people's songs about doing {wish} over two hundred times. Now, take off the headphones and do it yourself once.",
+                "This is your annual report — and a letter from yourself. You used music to get through a lot of uncertain nights. Those songs were with you, but they couldn't make the decision for you. Now the report is here. A year has passed. {wish} is still waiting. In next year's report, let it be your story, okay?",
+            ]
+        ),
+        Dimension(
+            id: "rideshare_review",
+            category: "网络热梗",
+            emoji: "🚗",
+            title: "网约车司机视角",
+            titleEN: "Rideshare Driver Five Stars",
+            templates: [
+                "我开了十年网约车，坐过我车的人什么都有。有人在我车上哭，有人在车上打电话谈成了大单，有人在后座犹豫了一路，到目的地还是没想明白。但有一种人我印象最深：上车就说「师傅，快点，我要去做一件大事」——那种人眼神里有光，让我也觉得使劲踩油门是对的。{wish}就是你的大事，快上车。",
+                "跑滴滴这些年我听过太多故事了。有人上车跟我说要去面试，紧张得手抖，到了门口深吸一口气进去了。后来他发消息说他被录取了。你知道那种人和另一种人的区别是什么吗？那种人哪怕很怕，还是去了。你想{wish}，就是那种人。上车，出发。",
+                "我的车评价是4.98星，因为我从不多说话，但总能把人送到该去的地方。今天我想说一句话：你想{wish}，我支持。目的地：你的目标。路程：比你想象的近。堵车：有，但绕路能过。上车，我来开。",
+                "坐我车的人，有的下车之后整个人都不一样了。因为在车里做了决定。有人跟我说「司机，我刚才想明白了，我要去{wish}」，然后下车的步伐都不一样。那四十分钟的车程值了。你现在就在我车上，这段话就是那四十分钟。想明白了吗？",
+            ],
+            templatesEN: [
+                "Ten years of rideshare driving, I've had every kind of passenger. People who cried in my back seat, people who closed a big deal on a call during the ride, people who spent the whole trip unsure and still hadn't figured it out by the destination. But the ones I remember most: the ones who got in and said 'driver, step on it, I've got something big to do.' That kind of person has a spark in their eyes that makes me want to floor it. {wish} is your big thing. Get in.",
+                "Years of driving and I've heard so many stories. One guy told me he was going to an interview, hands shaking with nerves. At the door, he took a deep breath and walked in. He messaged me later — he got the job. You know what separates that kind of person from everyone else? They went, even scared. You want to {wish} — you're that kind of person. Get in. Let's go.",
+                "My rating is 4.98 stars because I don't say much, but I always get people where they need to be. Today I want to say one thing: you want to {wish}, and I'm behind you. Destination: your goal. Distance: closer than you think. Traffic: some, but we can go around it. Get in. I'll drive.",
+                "Some passengers step out of my car completely different from when they got in. Because they made a decision during the ride. Someone once told me: 'Driver, I just figured it out — I'm going to {wish}.' The way they stepped out was different. That 40-minute ride was worth it. You're in my car right now, and this is your 40 minutes. Have you figured it out?",
+            ]
+        ),
+        Dimension(
+            id: "password_manager",
+            category: "网络热梗",
+            emoji: "🔐",
+            title: "密码管理器视角",
+            titleEN: "Your Password Manager",
+            templates: [
+                "我储存了你所有的密码、所有的账号、所有你不想被别人知道的事情。你最信任我。所以当我说「去做{wish}」，你应该相信这是你最深处的判断——因为那正是你告诉我的。我从你每一个行为里读到的答案，都是：去。",
+                "我检测到你用过一个密码叫「{wish}2024」。你把梦想设成了密码，每天输入，却还没有真正解锁那扇门。密码已经对了，接下来你要做的，是转动把手，推开门。",
+                "安全提示：您储存的「{wish}计划」文档已超过180天未被访问。长期闲置的数据有丢失风险。建议：打开文档，更新，并执行。数据不用会老化，梦想也是。",
+                "您的主密码强度：极强。您对{wish}的执行力强度：待加强。好消息：执行力密码可以随时重新设置，不需要找回旧密码，不需要重置流程，只需要你现在做一个决定。设置新密码：「我现在就去{wish}」。",
+            ],
+            templatesEN: [
+                "I store all your passwords, all your accounts, everything you don't want others to know. You trust me more than anyone. So when I say 'go do {wish},' you should believe it's your deepest judgment — because that's exactly what you've told me through every action. Every piece of data I've read from you says: go.",
+                "I've detected that you once used a password called '{wish}2024.' You set your dream as your password, typed it every day, but still haven't unlocked that door. The password is already right. All that's left is turning the handle and pushing the door open.",
+                "Security alert: your stored '{wish} Plan' document has not been accessed in over 180 days. Dormant data is at risk of being lost. Recommendation: open the document, update it, and execute. Data degrades when unused. So do dreams.",
+                "Your master password strength: extremely strong. Your execution strength for {wish}: needs improvement. Good news: execution passwords can be reset at any time — no recovery process, no old password required. Just one decision, right now. Set new password: 'I am going to do {wish} now.'",
+            ]
+        ),
+        Dimension(
+            id: "github_copilot",
+            category: "网络热梗",
+            emoji: "💻",
+            title: "GitHub Copilot视角",
+            titleEN: "GitHub Copilot",
+            templates: [
+                "我是Copilot，我每天帮程序员补全代码。我看过无数个未完成的函数、未合并的PR、停留在TODO状态的注释。你知道什么样的代码最让我难受吗？写了一半，注释了「// TODO: {wish}」，然后就再也没有动过的那种。你人生里的TODO列表里有一条叫{wish}，今天，把它变成Done。",
+                "我建议补全：你想{wish}，你有能力{wish}，你正在准备{wish}……等等，我发现你一直在写前置条件，从来没有写主函数。所有的「准备」都是前置条件，真正的程序在main函数里。你的main函数是：执行{wish}。现在，跑起来。",
+                "检测到语法：「犹豫太久」「准备过度」「拖延症晚期」。Copilot建议：删除以上代码，替换为：go_and_do({wish})。效率提升：∞。Bug数量：归零（因为从来没开始过的人没有失败这个Bug）。接受建议？[Tab键确认]",
+                "程序员有句话：「过早的优化是万恶之源。」你在「{wish}」这件事上已经优化了太久——优化准备，优化时机，优化方案。停止优化，先跑起来。跑起来了才知道哪里需要修，停在那里永远是一堆未运行的代码。Run。",
+            ],
+            templatesEN: [
+                "I'm Copilot. I help developers complete code every day. I've seen countless unfinished functions, unmerged PRs, comments stuck in TODO status forever. Know what kind of code breaks my heart? Half-written, commented '// TODO: {wish},' never touched again. Your life's TODO list has an item called {wish}. Today, mark it Done.",
+                "Suggested autocomplete: you want to {wish}, you're capable of {wish}, you're preparing to {wish}… wait — I notice you keep writing preconditions and never write the main function. All the 'preparation' is just setup. The real program lives in main. Your main function is: execute {wish}. Now run it.",
+                "Code smell detected: 'hesitated too long,' 'over-prepared,' 'advanced procrastination.' Copilot suggestion: delete the above code, replace with: go_and_do({wish}). Efficiency improvement: ∞. Bug count: zero (people who never start don't have a 'failure' bug). Accept suggestion? [Tab to confirm]",
+                "There's a saying in programming: 'Premature optimization is the root of all evil.' You've been optimizing {wish} for way too long — optimizing preparation, timing, and approach. Stop optimizing. Ship it first. You only find what needs fixing once it's running. Code that never runs is just dead weight. Run.",
+            ]
+        ),
+        Dimension(
+            id: "late_night_review",
+            category: "网络热梗",
+            emoji: "🌙",
+            title: "深夜外卖评价视角",
+            titleEN: "Late Night Food Review",
+            templates: [
+                "凌晨两点，刚写完{wish}的外卖评价：「口味：超出预期⭐⭐⭐⭐⭐。配送：非常及时，机不可失⭐⭐⭐⭐⭐。包装：人生把这个机会包得很好⭐⭐⭐⭐⭐。总评：强烈推荐，再来一次也不犹豫。唯一遗憾：没有早点点。」——这是做了{wish}的人写的评价。你也来写一篇？",
+                "深夜三点，一个人，刚做完{wish}，打开外卖App写评价。不是在评价食物，是在评价人生。「分量刚好，不多不少。口味：正是我想要的。配送员：我自己。五星好评，下次还来。」那种感觉，只有凌晨三点做完了一件重要的事，才有。",
+                "外卖评价区的深夜真实：「吃着吃着哭了，因为终于鼓起勇气去{wish}了，配着外卖庆祝的。」「本来很沮丧，突然想明白，决定明天就去做{wish}。记录一下这个时刻。」——深夜是人最诚实的时候，你现在的感受就是答案。{wish}，去做吧。",
+                "深夜点外卖的人都懂：有一种饿不是真的饿，是寂寞，是空洞，是某件没做的事留下的缺口。你现在的那个缺口叫{wish}。外卖填不了它，只有去做才能填。点完外卖，决定一下，一起解决。",
+            ],
+            templatesEN: [
+                "2 AM, just wrote a review for '{wish}' delivery: 'Taste: exceeded expectations ⭐⭐⭐⭐⭐. Delivery: perfectly timed, don't miss this window ⭐⭐⭐⭐⭐. Packaging: life wrapped this opportunity beautifully ⭐⭐⭐⭐⭐. Overall: highly recommended, would order again without hesitation. Only regret: not ordering sooner.' — That's the review someone wrote after doing {wish}. Want to write yours?",
+                "3 AM, alone, just finished {wish}, opened the delivery app to leave a review. Not reviewing food — reviewing life. 'Portion: just right, not too much or too little. Taste: exactly what I wanted. Delivery person: myself. Five stars, will order again.' That feeling — you only get it at 3 AM after doing something important.",
+                "The honest truth of late-night review sections: 'Started crying while eating because I finally worked up the courage to {wish} — celebrating with takeout.' 'Was feeling low, then it suddenly clicked — decided to do {wish} tomorrow. Marking this moment.' — Late night is when people are most honest. What you're feeling right now is the answer. Go do {wish}.",
+                "People who order late-night delivery know: sometimes you're not hungry — you're lonely, hollow, there's a gap left by something undone. That gap right now is called {wish}. Food won't fill it. Only doing it will. Order the food, make the decision, solve both at once.",
+            ]
+        ),
+        Dimension(
+            id: "screenshot_in_gallery",
+            category: "网络热梗",
+            emoji: "📸",
+            title: "相册里那张截图视角",
+            titleEN: "That Screenshot in Your Gallery",
+            templates: [
+                "我是你相册里第3847张图片，一张截图，内容是某个关于{wish}的帖子或者名言，你截下来是因为「以后可能用到」。你翻到我多少次了？每次翻到都会停一下，然后继续往下滑。今天，不要往下滑了。把我截下来的那个你，相信这句话是有用的。今天，用上它。",
+                "你手机相册里有多少张像我这样的截图？激励自己的、提醒自己的、记录「当时觉得很重要」的东西。那些截图是你和未来的自己约定的证据。{wish}也在某张截图里。把那个约定兑现吧。",
+                "我知道你截我的时候心里想的是什么——「对！就是这个！就是{wish}！」那种「被说中了」的感觉。那不是鸡汤，那是共鸣。你的内心认出了它。认出了就要去做，不然截图只是数字垃圾。",
+                "你相册里有一张截图写着{wish}。你存着它，舍不得删，偶尔翻到会心跳加速一下。那不是普通的图片，那是你和自己说的悄悄话。悄悄话不应该只是悄悄话——它值得被大声说出来，被真正实现。今天，实现它。",
+            ],
+            templatesEN: [
+                "I'm the 3,847th photo in your gallery — a screenshot of some post or quote about {wish}, saved because 'I might need this later.' How many times have you scrolled past me? Every time you pause for a moment, then keep swiping. Today, stop swiping. The version of you who took that screenshot believed those words mattered. Today, use them.",
+                "How many screenshots like me are in your gallery? Things to motivate yourself, remind yourself, record 'this felt important at the time.' Those screenshots are evidence of promises between you and your future self. {wish} is somewhere in one of them. Keep the promise.",
+                "I know what you were thinking when you took that screenshot: 'Yes! That's it! That's {wish}!' That feeling of being called out exactly — that wasn't just a quote. That was resonance. Your inner self recognized it. Recognition means you have to act, or the screenshot is just digital clutter.",
+                "There's a screenshot in your gallery about {wish}. You kept it, couldn't bring yourself to delete it, and every time you come across it your heart skips a beat. That's not just a picture — it's a secret you told yourself. Secrets shouldn't stay secrets forever. They deserve to be spoken aloud, truly realized. Today, realize it.",
+            ]
+        ),
+        Dimension(
+            id: "livestream_host",
+            category: "网络热梗",
+            emoji: "🎙️",
+            title: "直播间家人们视角",
+            titleEN: "Livestream Host",
+            templates: [
+                "家人们！！！我们今天直播间来了一位超级特别的观众——就是你！！你现在在想要不要{wish}对不对？！家人们给ta打个气！！！666666 加油加油加油！！连麦说说你的想法！家人们，这位观众需要我们的支持！！！我替家人们宣布：去做{wish}！！掌声！！！",
+                "家人们注意了！！直播间今天有个见证历史的机会！！我们要见证一个人做出一个改变人生的决定！！就是决定去{wish}！！！有没有家人愿意给ta助力的？！贴贴贴贴贴！！！主播代表直播间所有家人告诉你：你可以的！！我们都支持你！！！",
+                "家人们，主播有话说。不搞气氛，认真说——你想{wish}，这件事不容易，我知道。直播间这么多人陪着你，但最终走那一步的只能是你。家人们，一起给ta倒数：三、二、一——去！！直播间永远是你的后盾。",
+                "【直播预告】今晚八点，特别直播：「见证一个人去做{wish}」。预计话题：勇气、改变、出发。请各位家人届时守候，我们一起见证！主播说：你已经在直播了，全世界都在看。做给我们看。",
+            ],
+            templatesEN: [
+                "FAM!!! We have a super special viewer in the stream today — that's YOU!! You're thinking about whether to {wish} right now, aren't you?! Fam, let's hype them up!! 666666 YOU GOT THIS YOU GOT THIS!! Come on, tell us your thoughts!! Fam, this viewer needs our support!! I'm announcing on behalf of everyone in chat: GO DO {wish}!! Applause!!",
+                "Attention fam!! We have a chance to witness history in the stream today!! We're about to watch someone make a life-changing decision!! The decision to {wish}!!! Anyone want to send some support?! Gifting gifting gifting!! Streamer speaking for everyone in this stream: YOU CAN DO IT!! We're all rooting for you!!!",
+                "Fam, your streamer has something real to say. No hype, just honest — {wish} isn't easy, I know that. There are so many people in this stream with you, but the only one who can take that step is you. Everyone in chat, let's count down together: three, two, one — GO!! This stream will always have your back.",
+                "【Stream Announcement】 Tonight at 8 PM, special broadcast: 'Watching Someone Go Do {wish}.' Topics include: courage, change, taking the leap. Fam, be there with us, let's witness it together! Streamer says: you're already live — the whole world is watching. Do it for us.",
+            ]
+        ),
     ]
 
     /// Returns a random subset of dimensions for free-tier users.

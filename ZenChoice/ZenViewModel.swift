@@ -1,5 +1,6 @@
 import SwiftUI
 import StoreKit
+import UserNotifications
 
 @Observable
 class ZenViewModel {
@@ -33,7 +34,7 @@ class ZenViewModel {
     var subscriptionStatus: SubscriptionStatus = .free
 
     var isSubscribed: Bool {
-        subscriptionStatus != .free
+        subscriptionStatus != .free || InviteCodeManager.shared.hasFreePro
     }
 
     /// Call after any purchase / restore / transaction update to sync the stored status.
@@ -62,23 +63,35 @@ class ZenViewModel {
     }
 
     private func loadDailyUsage() {
-        let today = Calendar.current.startOfDay(for: Date())
-        let savedDate = UserDefaults.standard.object(forKey: Self.usageDateKey) as? Date ?? .distantPast
-        if Calendar.current.isDate(today, inSameDayAs: savedDate) {
+        let cooldown = FortuneEngine.cooldownInterval
+        // Sync with fortune draw date; fall back to encourage session date
+        let fortuneDate = fortuneEngine.lastDrawDate
+        let encourageDate = UserDefaults.standard.object(forKey: Self.usageDateKey) as? Date
+        let sessionDate = fortuneDate ?? encourageDate
+
+        if let sessionDate, Date().timeIntervalSince(sessionDate) < cooldown {
             dailyUsageCount = UserDefaults.standard.integer(forKey: Self.usageCountKey)
         } else {
-            // New day, reset
             dailyUsageCount = 0
             UserDefaults.standard.set(0, forKey: Self.usageCountKey)
-            UserDefaults.standard.set(today, forKey: Self.usageDateKey)
         }
     }
 
     private func incrementDailyUsage() {
         dailyUsageCount += 1
         UserDefaults.standard.set(dailyUsageCount, forKey: Self.usageCountKey)
-        let today = Calendar.current.startOfDay(for: Date())
-        UserDefaults.standard.set(today, forKey: Self.usageDateKey)
+        CloudSyncManager.shared.set(dailyUsageCount, forKey: Self.usageCountKey)
+        // Start encourage session if no active session exists
+        let cooldown = FortuneEngine.cooldownInterval
+        let fortuneDate = fortuneEngine.lastDrawDate
+        let encourageDate = UserDefaults.standard.object(forKey: Self.usageDateKey) as? Date
+        let sessionDate = fortuneDate ?? encourageDate
+        if sessionDate == nil || Date().timeIntervalSince(sessionDate!) >= cooldown {
+            let now = Date()
+            UserDefaults.standard.set(now, forKey: Self.usageDateKey)
+            CloudSyncManager.shared.set(now, forKey: Self.usageDateKey)
+            scheduleRefreshNotification()
+        }
     }
 
     // MARK: - Input
@@ -142,49 +155,30 @@ class ZenViewModel {
 
     let socialManager = SocialManager()
 
-    var showInbox: Bool = false
-    var showEncourageRequest: Bool = false
-    var showWitnessRequest: Bool = false
+    // MARK: - Tab Navigation
+
+    var selectedTab: AppTab = .fortune
+
+    // MARK: - Fortune & ZenType Engines
+
+    let fortuneEngine = FortuneEngine()
+    let zenTypeEngine = ZenTypeEngine()
+
     var showRespondSheet: Bool = false
-    var showBonds: Bool = false
-    var showGuess: Bool = false
     var deepLinkRequest: CourageRequest?
-    var pendingAnonymousEncouragement: AnonymousEncouragement?
 
-    private static let socialCountKey = "dailySocialCount"
-    private static let socialDateKey = "dailySocialDate"
-    var dailySocialCount: Int = 0
+    // MARK: - Share Reward (daily share → 1 free custom perspective)
 
-    var socialDailyLimit: Int {
-        isSubscribed ? 999 : 2
+    private static let shareRewardDateKey = "shareRewardDate"
+
+    var hasShareReward: Bool {
+        guard let date = UserDefaults.standard.object(forKey: Self.shareRewardDateKey) as? Date else { return false }
+        return Date().timeIntervalSince(date) < 24 * 60 * 60
     }
 
-    var canCreateSocialRequest: Bool {
-        dailySocialCount < socialDailyLimit
-    }
-
-    func loadSocialUsage() {
-        let today = Calendar.current.startOfDay(for: Date())
-        let savedDate = UserDefaults.standard.object(forKey: Self.socialDateKey) as? Date ?? .distantPast
-        if Calendar.current.isDate(today, inSameDayAs: savedDate) {
-            dailySocialCount = UserDefaults.standard.integer(forKey: Self.socialCountKey)
-        } else {
-            dailySocialCount = 0
-            UserDefaults.standard.set(0, forKey: Self.socialCountKey)
-            UserDefaults.standard.set(today, forKey: Self.socialDateKey)
-        }
-    }
-
-    func incrementSocialUsage() {
-        dailySocialCount += 1
-        UserDefaults.standard.set(dailySocialCount, forKey: Self.socialCountKey)
-        let today = Calendar.current.startOfDay(for: Date())
-        UserDefaults.standard.set(today, forKey: Self.socialDateKey)
-    }
-
-    func generateAISummary() -> String {
-        guard let result = currentResult, let first = result.dimensions.first else { return "" }
-        return first.content
+    func recordShareReward() {
+        guard !isSubscribed, !hasShareReward else { return }
+        UserDefaults.standard.set(Date(), forKey: Self.shareRewardDateKey)
     }
 
     @MainActor
@@ -216,14 +210,8 @@ class ZenViewModel {
                     errorMessage = L.isChinese ? "结缘失败" : "Bond failed"
                     showError = true
                 }
-            case .authCallback(let accessToken, let refreshToken):
-                do {
-                    try await authManager.handleMagicLinkCallback(accessToken: accessToken, refreshToken: refreshToken)
-                    HapticManager.success()
-                } catch {
-                    errorMessage = error.localizedDescription
-                    showError = true
-                }
+            case .authCallback:
+                break  // OTP flow handles auth in-app, no callback needed
             }
         }
     }
@@ -248,7 +236,7 @@ class ZenViewModel {
 
     // MARK: - Private
 
-    private let llmProvider: LLMProvider = QwenProvider()
+    private let llmProvider: LLMProvider = QwenProvider.shared
 
     // MARK: - Lifecycle
 
@@ -257,16 +245,31 @@ class ZenViewModel {
         // Wire social manager to auth
         socialManager.authManager = authManager
 
+        // Load local data first (no network) so UI is ready immediately
+        loadLocalArchive()
+        loadDailyUsage()
+        fortuneEngine.loadFortunes()
+        zenTypeEngine.loadData()
+
+        // Network-dependent init follows
+        // Refresh token on launch (prevents 401 after token expiry)
+        if authManager.isLoggedIn {
+            await authManager.refreshSessionIfNeeded()
+        }
+
         // Check profile if logged in
         if authManager.isLoggedIn {
             await authManager.checkProfileExists()
-            try? await socialManager.fetchBonds()
-            try? await socialManager.fetchPendingEncouragements()
         }
 
-        loadLocalArchive()
-        loadDailyUsage()
-        loadSocialUsage()
+        // Invite code: early bird + ensure code + apply pending rewards
+        if let userId = authManager.userId {
+            await InviteCodeManager.shared.checkEarlyBird(userId: userId)
+            await InviteCodeManager.shared.ensureCode(userId: userId)
+            await InviteCodeManager.shared.checkAndApplyRewards(userId: userId)
+        }
+
+        requestNotificationPermission()
 
         // Check existing entitlements (local, fast)
         await subscriptionManager.refreshStatus()
@@ -314,9 +317,10 @@ class ZenViewModel {
 
         try? await Task.sleep(for: .seconds(1.8))
 
-        let activePerspectives = customPerspectives.filter(\.isValid)
+        let allActive = customPerspectives.filter(\.isValid)
+        let activePerspectives = isSubscribed ? allActive : (hasShareReward ? Array(allActive.prefix(1)) : [])
 
-        if isSubscribed, !activePerspectives.isEmpty {
+        if !activePerspectives.isEmpty {
             let provider = llmProvider
             let indexedResults: [(Int, DimensionResult)] = await withTaskGroup(of: (Int, DimensionResult?).self) { group in
                 for (index, p) in activePerspectives.enumerated() {
@@ -366,24 +370,6 @@ class ZenViewModel {
                 dimensionCount: dimensionCount,
                 language: appLanguage
             )
-        }
-
-        // Inject anonymous encouragement as the first dimension if available
-        if let anon = socialManager.pendingEncouragements.first, var result = currentResult {
-            let anonDimension = DimensionResult(
-                id: UUID(),
-                dimensionId: "anonymous_friend",
-                dimensionTitle: L.isChinese ? "来自好友的匿名鼓励" : "Anonymous Friend's Encouragement",
-                emoji: "💌",
-                content: anon.content
-            )
-            currentResult = EncouragementResult(
-                wish: result.wish,
-                dimensions: [anonDimension] + result.dimensions,
-                generatedAt: result.generatedAt,
-                isLLMGenerated: result.isLLMGenerated
-            )
-            pendingAnonymousEncouragement = anon
         }
 
         // Increment daily usage
@@ -481,8 +467,87 @@ class ZenViewModel {
             isChinese: L.isChinese
         )
         showShareSheet = shareCardImage != nil
-        if shareCardImage != nil { HapticManager.success() }
+        if shareCardImage != nil {
+            HapticManager.success()
+            recordShareReward()
+        }
         #endif
+    }
+
+    // MARK: - Fortune Card
+
+    func generateFortuneCard(fortune: Fortune) {
+        #if os(iOS)
+        shareCardImage = PosterService.renderFortuneCard(
+            fortune: fortune,
+            isChinese: L.isChinese
+        )
+        showShareSheet = shareCardImage != nil
+        if shareCardImage != nil {
+            HapticManager.success()
+            recordShareReward()
+        }
+        #endif
+    }
+
+    // MARK: - ZenType Card
+
+    func generateZenTypeCard(zenType: ZenType) {
+        #if os(iOS)
+        shareCardImage = PosterService.renderZenTypeCard(
+            zenType: zenType,
+            isChinese: L.isChinese
+        )
+        showShareSheet = shareCardImage != nil
+        if shareCardImage != nil {
+            HapticManager.success()
+            recordShareReward()
+        }
+        #endif
+    }
+
+    func generateZenTypeAdvancedCard(zenType: ZenType, basicType: ZenType?) {
+        #if os(iOS)
+        shareCardImage = PosterService.renderZenTypeAdvancedCard(
+            zenType: zenType,
+            isChinese: L.isChinese,
+            basicType: basicType
+        )
+        showShareSheet = shareCardImage != nil
+        if shareCardImage != nil {
+            HapticManager.success()
+            recordShareReward()
+        }
+        #endif
+    }
+
+    // MARK: - Notifications
+
+    func requestNotificationPermission() {
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { _, _ in }
+    }
+
+    func scheduleRefreshNotification() {
+        let center = UNUserNotificationCenter.current()
+        center.removePendingNotificationRequests(withIdentifiers: ["zenFortuneRefresh"])
+
+        let content = UNMutableNotificationContent()
+        content.title = L.isChinese ? "禅意" : "ZenChoice"
+        content.body = L.isChinese
+            ? "禅签已刷新，来看看今天的签文吧"
+            : "Your oracle has refreshed — come draw today's fortune"
+        content.sound = .default
+
+        let trigger = UNTimeIntervalNotificationTrigger(
+            timeInterval: FortuneEngine.cooldownInterval,
+            repeats: false
+        )
+        let request = UNNotificationRequest(
+            identifier: "zenFortuneRefresh",
+            content: content,
+            trigger: trigger
+        )
+        center.add(request)
     }
 
     // MARK: - Reset
